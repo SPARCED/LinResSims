@@ -1,1 +1,2 @@
-# LinResSims
+# Multigenerational-Lineage
+Lineage paper
