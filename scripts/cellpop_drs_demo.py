@@ -94,7 +94,7 @@ omics_input = 'OmicsData.txt'
 genereg_input = 'GeneReg.txt'
 
 # Stochastic (0) or deterministic (1) gene switching decision point, 
-# assigned as stochastic here for a heterogeneous cell population.
+# assigned as stochastic here for a heterogeneous cell population. DO NOT CHANGE
 flagD = 0
 
 # Deterministic simulation interval between stochastic gene expression updates.
@@ -242,7 +242,6 @@ th_g0 = 48
 
 cellpop_g0 = cell_pop ### Potentially redunant, solvable with __init__ method? | JRH
 
-output_dir = output_dose ### JRH: Is the output_dose reassigned anywhere? If not, suggest removing.
 
 g0_dict = {}
 g0_cell_start, g0_cell_end = assign_tasks(rank,cellpop_g0,size)
@@ -321,8 +320,8 @@ tps_g0 = comm.bcast(tps_g0, root = 0)
 comm.Barrier()
 
 # save g0 results
-with open(os.path.join(output_dir,"results_g0.pkl"),"wb") as f:
-    pickle.dump(results_g0,f) # Write gen 1 output to disk
+# with open(os.path.join(output_dir,"results_g0.pkl"),"wb") as f:
+#     pickle.dump(results_g0,f) # Write gen 1 output to disk
 
 
 #%%---------------------additional step for demo (figure 2)-------------------#
@@ -399,7 +398,6 @@ th = exp_time + 3.0 ### Why is 3.0 added? | JRH
 
 cellpop_g1 = cell_pop
 
-output_dir = output_dose ### JRH: Is the output_dose reassigned anywhere? If not, suggest removing.
 
 # generation 1 task assignment step
 g1_cell_start, g1_cell_end = assign_tasks(rank,cellpop_g1,size)

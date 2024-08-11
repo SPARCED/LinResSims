@@ -1,11 +1,19 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+script name: createModel.py
 Created on Fri May 12 18:06:40 2023
+Author: Arnab Mutsuddy (edited by JRH)
 
-@author: Arnab
+Description: This script is used to run SPARCED model for a given cell 
+            population and drug dose.
+
+Output: The script generates output files for each cell in the cell population.
+        The output files contain the time course of the Mb species for each 
+        cell.
+
 """
-# import all required libraries
-
+#-----------------------Package Import & Defined Arguements-------------------#
 import pandas as pd
 import numpy as np
 
@@ -88,21 +96,40 @@ from modules.RunSPARCED import RunSPARCED
 omics_input = 'OmicsData.txt'
 genereg_input = 'GeneReg.txt'
 
+# Stochastic (0) or deterministic (1) gene switching decision point, 
+# assigned as stochastic here for a heterogeneous cell population. DO NOT CHANGE
+
 flagD = 0
+
+# Deterministic simulation interval between stochastic gene expression updates.
+
 
 ts = 30
 
+# Length of simulation, user defined via CLI, flag '--exp_time'
+
 th = float(args.exp_time)
+
+# Initial concentrations of SPARCED species
 
 species_all = list(model.getStateIds())
 
+# Assign the CVODES and/or IDAS solvers to an object of the model class, 
+# and specify the maximum number of iterations for the forward solver.
 solver = model.getSolver()          # Create solver instance
 solver.setMaxSteps = 1e10
+
+# Set the timepoints for the simulation on a fixed 'ts' defined interval
+
 model.setTimepoints(np.linspace(0,ts))
+
+
+# Set the initial number of cells to start the simulation. 
 
 cell_pop = int(args.cellpop)
 
-#%%
+#%% User defined (CLI) growth factor conditions
+
 
 
 dose_egf = float(args.egf)
@@ -118,6 +145,8 @@ STIMligs_id = ['E', 'H', 'HGF', 'P', 'F', 'I', 'INS']
 
 
 STIMligs = [dose_egf,dose_nrg,dose_hgf,dose_pdgf,dose_fgf,dose_igf,dose_ins]
+
+# User defined drug dose and species via flag '--drug' and '--dose'
 
 drug = str(args.drug)
 dose = float(args.dose)*10e2
@@ -143,7 +172,7 @@ if override_param > 0:
 for l,lig in enumerate(STIMligs_id):
     species_initializations[species_all.index(lig)] = 0
 
-#%% Define output directory
+#%% Define output directory for drug dose simulation
 
 output_dose = os.path.join(output_path,drug+'_'+str(float(args.dose)))
 
@@ -152,13 +181,13 @@ if rank==0:
         os.mkdir(output_dose)
 
 
-th = 48
+
 
 output_dir = output_dose
 
 
 
-#%% Assign MPI tasks to ranks
+#%% Assign MPI tasks to ranks based on starting cell population
 
 def assign_tasks(rank,n_cells,size):
     
@@ -175,16 +204,18 @@ def assign_tasks(rank,n_cells,size):
     return start_cell, start_cell + my_cells
 
 
+#%% -------------------Preincubation/Heterogenization stage-------------------#
+# designed to create 
+# variability within the starting cell population to replicate 
+# experimentally observed heterogeneity. 
 
-#%% Preincubate/Heterogenize
+# Preincubation timeframe
 
-
+th = 48
 
 cellpop_preinc = int(cell_pop)
 
 cell0, cell_end = assign_tasks(rank,cellpop_preinc,size)
-
-#%
 
 
 # Generate task-specific dictionaries
@@ -199,10 +230,14 @@ for task in range(cell0, cell_end):
     
     print("Running preincubate (%d) on rank %d | %s" %(task, rank, tstmp))
     
+    # Generate randomly initialized cell states for each cell in the population
+
+    
     xoutS_all, xoutG_all, tout_all = RunSPARCED(flagD,th,species_initializations,[],sbml_file,model)
     
 
- 
+    # Extract the final state of the cell after preincubation for 
+    # initial conditions in the subsequent gen 0 simulation. 
     
     preinc_IC = xoutS_all[-1]
     
@@ -210,14 +245,18 @@ for task in range(cell0, cell_end):
     
     preinc_dict[task] = {'cell':int(task), 'preinc_IC':preinc_IC}
 
+# Send cell-specific preincubation results to rank 0
+
+
 if rank != 0:
     comm.send(preinc_dict,dest=0)
 
-
-
 results_preinc = None
 
+
+### Data Collection Stage ###
 if rank == 0:
+    # Root rank receives preincubation results from all ranks
     results_preinc_recv = []
     results_preinc_recv.append(preinc_dict)
     for r in range(1,size):
@@ -233,23 +272,22 @@ if rank == 0:
     for i in range(len(results_collect)):
         cell = results_collect[i]['cell']
         results_preinc [str(cell)] = results_collect[i]['preinc_IC'] 
-        
-    # with open(os.path.join(output_path,"output_g1.pkl"),"wb") as f:
-    #     pickle.dump(merged_dicts_recv,f)
+
 results_preinc = comm.bcast(results_preinc, root = 0)
 
 
-
+# Prevents the simulation from proceeding until all ranks have completed the
+# preincubation stage.
 comm.Barrier()
 
 
-#%% Initiate gen 0 (asynchronous cycling)
+#%% ------------------Initiate gen 0 (asynchronous cycling)-------------------#
+# Generates initial conditions for asynchronously cycling gen 1 cells
 
 th_g0 = 48
 
 cellpop_g0 = cell_pop
 
-output_dir = output_dose
 
 
 g0_dict = {}
@@ -263,7 +301,7 @@ g0_cell_start, g0_cell_end = assign_tasks(rank,cellpop_g0,size)
 
 for task in range(g0_cell_start, g0_cell_end):
 
-    
+    # Tasks correspond to individual cells in the population    
     cell_n = int(task)
     
     np.random.seed()
@@ -286,17 +324,28 @@ for task in range(g0_cell_start, g0_cell_end):
     
     
     np.random.seed()
-    tp_g0 = np.random.randint(0,np.shape(xoutS_all)[0]) 
+    tp_g0 = np.random.randint(0,np.shape(xoutS_all)[0])
+    # Extract the final state of the cell after preincubation for
+    # only the cyclin B - CDK1 for each cell in the population.
     ic_g1 = xoutS_all[tp_g0,:]
     
     
     output_g0_cell = {}
     
 
+    # Extract Cb_CDK1 trajectory to determine cell division point for gen 1 cells
+    
     output_g0_cell['xoutS'] = xoutS_all[:,list(species_all).index('Mb')]
 
+    # Individual cell outputs are stored in a 
+    # dictionary for each cell in the population.
+    # Stores cell identifier, Mb timecourse, initial 
+    # conditions for gen 1, and division timepoint for gen 0.
     g0_dict[task] = {'cell':cell_n,'result':output_g0_cell,'ic_g1':ic_g1, 'tp_g0':tp_g0}
+ 
     
+# MPI communication step to send gen 0 results to rank 0, 
+# where all results are collected and stored.
 if rank!= 0:
     comm.send(g0_dict,dest=0)
     
@@ -337,6 +386,20 @@ comm.Barrier()
 mb_tr = float(args.mb_tr)
 
 def find_dp(xoutS,tout,species_all=species_all):
+    """
+    Function to find the division point of a single cell
+    using the value of cyclin B - CDK2 complex  trough as a threshold.
+
+    Parameters:
+    xoutS : numpy array
+        Array of species concentrations over time.
+
+    species_all : list
+
+    Returns:
+    dp : int or nan | division point
+    
+    """    
     data = xoutS[:,list(species_all).index('Mb')]
     p,_ = find_peaks(data,height=30)
     b = (np.diff(np.sign(np.diff(data))) > 0).nonzero()[0] + 1
@@ -354,7 +417,19 @@ def find_dp(xoutS,tout,species_all=species_all):
     return(dp)
 
 def find_dp_all(data,species_all=species_all):
+    """
+    Finds all division points in a single cell using the value of 
+    cyclin B - CDK2 complex trough as a threshold.
+    
+    Parameters:
+    data : numpy array
+        Array of species concentrations over time.
 
+    species_all : list
+
+    Returns:
+    dp_all : list | division points
+    """
     p,_ = find_peaks(data,height=30)
     b = (np.diff(np.sign(np.diff(data))) > 0).nonzero()[0] + 1
     
@@ -372,26 +447,26 @@ def find_dp_all(data,species_all=species_all):
     return(dp_all)
 
 
-#%% Run gen 1
-
+#%%-----------------------------Generation 1 Cells----------------------------#
+# User defined simulation time length, defined via CLI, flag '--exp_time'
 exp_time = float(args.exp_time)
 
-th = exp_time + 3.0
+th = exp_time + 3.0 # 3 hours extra to make sure plotting functions have enough time points
 
 cellpop_g1 = cell_pop
 
-output_dir = output_dose
-
-
+# generation 1 task assignment step
 
 g1_cell_start, g1_cell_end = assign_tasks(rank,cellpop_g1,size)
 
+# Instantiate task-specific dictionaries for generation 1 cells
 
 g1_dict = {}
 
 for task in range(g1_cell_start, g1_cell_end):
     cell_n = int(task)
-    
+    # First generation identifier starts with 'g1_c' and continues
+    #  with the cell number    
     cell_name = 'g1_c'+str(cell_n)
     
 
@@ -399,25 +474,26 @@ for task in range(g1_cell_start, g1_cell_end):
     
     print("Running gen1 cell (%d) on rank %d | %s" %(cell_n, rank, tstmp))
     
-
-    
+    # Extract gen 0 cell division timepoint and initial conditions    
     x_s_g0 = results_g0[str(cell_n)]['xoutS']
     
     np.random.seed()
     
-
+    # Extract gen 0 starting values for gen 1 simulation  
     tp_g0 = tps_g0[str(cell_n)]    
     sp_input = ics_g1[str(cell_n)]
     sp_input = np.array(sp_input)
     sp_input[np.argwhere(sp_input <= 1e-6)] = 0.0
-
+    # Assign drug perturbation to the gen 1 cell
     sp_input[list(model.getStateIds()).index(drug)] = dose
+    # Gen 1 cell simulation
     
-    xoutS_g1, xoutG_g1, tout_g1 = RunSPARCED(flagD,th,sp_input,[],sbml_file,model) # Gen 1 cell simulation
+    xoutS_g1, xoutG_g1, tout_g1 = RunSPARCED(flagD,th,sp_input,[],sbml_file,model)
     
-
+    # Extract the final state of the cell after gen 1 simulation
     xoutS_mb_g0 = x_s_g0
     xoutS_mb_g1 = xoutS_g1[:,list(species_all).index('Mb')]
+    # Concatenate the gen 0 timepoints to the gen 1 timepoints
  
     tout_g0 = np.arange(0,th_g0*3600+1,ts)
     tout_g0 = tout_g0[0:len(xoutS_mb_g0)]
@@ -445,7 +521,7 @@ for task in range(g1_cell_start, g1_cell_end):
    
     cb_peaks, _ = find_peaks(xoutS_mb_new,height=30)  
     
-    # Downsample single cell outputs
+    # Downsample single cell outputs to every 20th timepoint
     xoutS_lite = np.array(list(itertools.islice(xoutS_g1,0,(len(xoutS_g1)-1),20)))
     xoutG_lite = np.array(list(itertools.islice(xoutG_g1,0,(len(xoutG_g1)-1),20)))
     tout_lite = np.array(list(itertools.islice(tout_g1,0,(len(tout_g1)-1),20)))
@@ -461,25 +537,25 @@ for task in range(g1_cell_start, g1_cell_end):
         dp = np.nan
 
         if len(dp_all)>0:
-            
+            # If we're able to find a division point, we assign it to dp            
             if len(np.where(tout_new[dp_all]>0)[0]) > 0:
                 dp_idx = np.where(tout_new[dp_all]>0)[0][0]
     
                 dp = dp_all[dp_idx]
             
-  
+         # If a division point is found, we proceed with the gen 2 simulation 
         if ~np.isnan(dp):
             dp_actual = dp - len(tout_new) + len(tout_g1)
             parp_dp = float(xoutS_g1[dp_actual,list(species_all).index('PARP')])
             cparp_dp = float(xoutS_g1[dp_actual,list(species_all).index('cPARP')])
-            
+            # The PARP / cPARP threshold is used to determine cell death            
             if parp_dp > cparp_dp:
             
                 
                 tdp_g2_cell = tout_g1[dp_actual]/3600
                 
                 sp_g2_cell = xoutS_g1[dp_actual]
-                
+                # Assign the new cell lineage identifier for gen                 
                 lin_g2_cell = 'c'+str(int(cell_n))
                 
                 g2_start['cell'] = int(cell_n)
@@ -491,7 +567,7 @@ for task in range(g1_cell_start, g1_cell_end):
                 
                 dp1 = np.where(tout_g1 == tout_new[dp])[0][0]
                 
-                
+                # Downsample gen 1 outputs to every 20th timepoint                
                 xoutS_lite = np.array(list(itertools.islice(xoutS_g1,0,(dp1+1),20)))
                 xoutG_lite = np.array(list(itertools.islice(xoutG_g1,0,(dp1+1),20)))
                 tout_lite = np.array(list(itertools.islice(tout_g1,0,(dp1+1),20)))
@@ -499,7 +575,7 @@ for task in range(g1_cell_start, g1_cell_end):
     
     
     
-    
+    # Store gen 1 cell outputs and store as a dictionary
     output_g1_cell = {}
     
     output_g1_cell['cell'] = int(cell_n)
@@ -519,7 +595,7 @@ if rank!= 0:
     
 # Gather results from all ranks to rank 0
 
-results_g2start = None
+results_g2start = None ### object initiated for next MPI communication
 
 if rank == 0:
     results_g1_recv = []
@@ -539,15 +615,17 @@ if rank == 0:
         results_g1[str(cell)] = results_g1_collect[i]['result']
         results_g2start[str(cell)] = results_g1_collect[i]['result']['g2_start']
 
+    # Save generation 1 simulation results to disk
     with open(os.path.join(output_dir,"output_g1.pkl"),"wb") as f:
         pickle.dump(results_g1,f) # Write gen 1 output to disk
                 
-# Broadcast gen 2 details
-
+# Broadcast gen 2 details and halt simulation until all ranks have completed
 results_g2start = comm.bcast(results_g2start, root = 0)
 comm.Barrier()
     
-
+#------------------------------Generation 2 Cells-----------------------------#
+# Extract gen 2 details and evaluate for prior division events, 
+# if none are found, the simulation is halted.
 g2_start_all = [results_g2start[str(rn+1)] for rn in range(len(results_g2start))]
 
 g2_start_actual = np.array(g2_start_all)[np.where(g2_start_all)[0]]
@@ -588,16 +666,15 @@ g = 2
 
 comm.Barrier()
 
-while cellpop_gn0 > 0:
-    
-    
+# Continue simulation until no division events are detected
 
-    
+while cellpop_gn0 > 0: 
+        
     gn_cell_start, gn_cell_end = assign_tasks(rank,cellpop_gn0,size)
-
     
     # Generate task-specific dictionaries
     gn_dict = {}
+    
     
     for task in range(gn_cell_start, gn_cell_end):
         
@@ -609,15 +686,15 @@ while cellpop_gn0 > 0:
         tstmp = str(datetime.now().strftime("%d %m %Y %H:%M:%S"))
         
         print("Running gen(%d) cell(%d) (lin(%s)) for (%d) hrs on rank %d | %s" %(g,cell_n,lin_gc,th_gc,rank,tstmp))
-        
+        # Dynamic cell identifier assignment step        
         cell_name = 'g'+str(g)+'_c'+str(cell_n)+'_lin_'+str(lin_gn0[cell_n-1])
         
         sp0 = ic_gn0[cell_n-1]
-        
+         # Simulation via SPARCED       
         xoutS_all, xoutG_all, tout_all = RunSPARCED(flagD,th_gc,sp0,[],sbml_file,model)
         
         tout_all = tout_all + (th-th_gc)*3600
-        
+        # Downsample single cell outputs to every 20th timepoint      
         xoutS_lite = np.array(list(itertools.islice(xoutS_all,0,(len(xoutS_all)-1),20)))
         xoutG_lite = np.array(list(itertools.islice(xoutG_all,0,(len(xoutG_all)-1),20)))
         tout_lite = np.array(list(itertools.islice(tout_all,0,(len(tout_all)-1),20)))     
@@ -649,14 +726,14 @@ while cellpop_gn0 > 0:
                     sp_gn_cell = xoutS_all[dp]
                     
                     lin_gn_cell = str(lin_gn0[cell_n-1])+'c'+str(cell_n)
-                    
+                    # Assign the new cell lineage dictionary entry for gen (n+1)                    
                     gn1_start['cell'] = int(cell_n)
                     gn1_start['dp'] = dp
                     gn1_start['th_gn'] = th- tdp_gn_cell    
                     gn1_start['lin'] = lin_gn_cell
                     gn1_start['ic'] = sp_gn_cell                             
     
-    
+                    # Downsample gen n outputs to every 20th timepoint    
                     xoutS_lite = np.array(list(itertools.islice(xoutS_all,0,(dp+1),20)))
                     xoutG_lite = np.array(list(itertools.islice(xoutG_all,0,(dp+1),20)))
                     tout_lite = np.array(list(itertools.islice(tout_all,0,(dp+1),20)))
@@ -673,7 +750,7 @@ while cellpop_gn0 > 0:
         result_gn_cell['gn1_start'] = gn1_start
         
         gn_dict[task] = {'cell': cell_n, 'result': result_gn_cell}
-        
+    # For all cells in gen n, send results to rank 0            
     if rank!=0:
         comm.send(gn_dict,dest=0)
         
