@@ -65,8 +65,8 @@ species_all = [str(x.getId()) for x in list(sbml_model.getListOfSpecies())]
 output_dir_main = os.path.join(wd,'output')
 
 exp_title = 'in_silico_drs'
-# output_main = os.path.join(wd,'output',exp_title)
-output_main = os.path.join("E:\\",exp_title)
+output_main = os.path.join(wd,'output',exp_title)
+# output_main = os.path.join("E:\\",exp_title)
 
 
 dir_doses_all = os.listdir(os.path.join(output_main,'drs_alpel','drs_alpel_rep1'))
