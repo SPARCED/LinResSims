@@ -47,6 +47,7 @@ parser.add_argument('--sim_name', metavar='sim_name', help='insert exp name', de
 parser.add_argument('--mb_tr',metavar='mb_tr',help='Mb trough upper limit (nM)', default = 2.0)
 parser.add_argument('--exp_time', metavar='exp_time', help='Enter experiment time in hours', default = 72.0)
 parser.add_argument('--drug', metavar='drug', help='input drug species name', default = 'trame_EC')
+parser.add_argument('--rep', metavar='rep', help='specify replicate identifier', default = 'rep1')
 parser.add_argument('--dose', metavar='dose', help='input drug dose uM', default = 0.0)
 parser.add_argument('--egf', metavar='egf', help='input E conc in nM', default = 3.308)
 parser.add_argument('--ins', metavar='ins', help='input INS conc in nM', default = 1721.76)
@@ -150,7 +151,7 @@ STIMligs = [dose_egf,dose_nrg,dose_hgf,dose_pdgf,dose_fgf,dose_igf,dose_ins]
 
 drug = str(args.drug)
 dose = float(args.dose)*10e2
-
+rep = str(args.rep)
 
 override_param = float(args.override_param)
 override_ic = float(args.override_ic)
@@ -174,17 +175,20 @@ for l,lig in enumerate(STIMligs_id):
 
 #%% Define output directory for drug dose simulation
 
-output_dose = os.path.join(output_path,drug+'_'+str(float(args.dose)))
+output_rep = os.path.join(output_path,'drs_'+drug+'_'+str(rep))
+
+if rank==0:
+    if not os.path.exists(output_rep):
+        os.mkdir(output_rep)
+
+output_dose = os.path.join(output_rep,drug+'_'+str(float(args.dose)))
 
 if rank==0:
     if not os.path.exists(output_dose):
         os.mkdir(output_dose)
 
 
-
-
 output_dir = output_dose
-
 
 
 #%% Assign MPI tasks to ranks based on starting cell population
