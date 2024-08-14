@@ -12,6 +12,7 @@ Instructions for replicating results from the paper:
     * OmicsData.txt
     * GeneReg.txt
     * StoicMat.txt
+   For detailed instruction on the input files visit: https://github.com/birtwistlelab/SPARCED
 2. Run scripts/createModel.py to build model
 3. Once the model build process is complete, MPI can be used to run cell population simulations using the following command:
     mpirun -np [n_cpu] python cellpop_drs.py --arguments [argument_value]
