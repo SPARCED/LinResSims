@@ -50,7 +50,7 @@ Instructions for replicating results from the paper:
     8b. Install all dependencies including Python 2.0
     8c. Go to gr_metrics/SRC/python/scripts
     8d. Run python add_gr_column.py [input_path] > [output_path]    
-9. To generate dose response comparison (experiment vs. simulation) plots run analysis_grplots.py after gr scores have been calculated. 
+9. To generate dose response comparison (experiment vs. simulation) plots run analysis_grplots.py after gr scores have been calculated.
 
 
 
