@@ -6,9 +6,9 @@ output
 ├── sim_name   
 │   ├── drs_<drug_name>   
 │   │   ├── drs_<drug_name>_<replicate_id>   
-│   |   |    ├── <drug_name>_<dose>   
-│   |   |    |  ├── output_g1.pkl   
-│   |   |    |  ├── output_g1.pkl   
-│   |   |    |  ├── output_g1.pkl   
-│   |   |    |  ├── output_g1.pkl   
-│   |   |    |  ├── output_g1.pkl   
+│   │   |    ├── <drug_name>_<dose>   
+│   │   |    |  ├── output_g1.pkl   
+│   │   |    |  ├── output_g1.pkl   
+│   │   |    |  ├── output_g1.pkl   
+│   │   |    |  ├── output_g1.pkl   
+│   │   |    |  ├── output_g1.pkl   
