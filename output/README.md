@@ -12,3 +12,14 @@ output
 │   │   |    |  ├── output_g1.pkl   
 │   │   |    |  ├── output_g1.pkl   
 │   │   |    |  ├── output_g1.pkl   
+
+RootFolder
+├── Folder1
+│   ├── SubFolder1
+│   │   ├── Level1
+│   │   │   ├── Level2
+│   │   │   │   ├── File1.txt
+│   │   │   │   ├── File2.txt
+│   │   │   │   ├── File3.txt
+│   │   │   │   ├── File4.txt
+│   │   │   │   └── File5.txt
