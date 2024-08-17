@@ -2,7 +2,7 @@ By default, simulation results are saved in this folder.
 
 Generated output files will have the following folder structure:
 
-output
+output < br / > 
 ├── sim_name
 │   ├── drs_<drug_name>
 │   │   ├── drs_<drug_name>_<replicate_id>
