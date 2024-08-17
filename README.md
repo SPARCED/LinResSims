@@ -31,19 +31,19 @@ Instructions for replicating results from the paper:
     mpirun -np [n_cpu] python cellpop_drs.py --arguments [argument_value]
     Here, n_cpu  is the number of MPI processes that the user decides to use for parallelization.
 4. Simulation code accepts the following command line arguments:
-    sim_name: An arbitrary string defined by the user to create a directory under sparced/output where simulation outputs will be saved.
-    cellpop: An integer specifying the number of starting cells for simulation
-    exp_time: Duration of experiment in hours
-    drug: String specifying species name for the drug of interest (alpel_EC, nerat_EC, trame_EC, palbo_EC)
-    rep: String identifier for the current replicate
-    dose: Applied concentration of the drug in μM
-    egf: Serum EGF concentration in nM
-    ins: Serum INS concentration in nM
-    hgf: Serum HGF concentration in nM
-    nrg: Serum Heregulin concentration in nM
-    pdgf: Serum PDGF concentration in nM
-    igf: Serum IGF concentration in nM
-    fgf: Serum FGF concentration in nM
+        sim_name: An arbitrary string defined by the user to create a directory under sparced/output where simulation outputs will be saved.
+        cellpop: An integer specifying the number of starting cells for simulation
+        exp_time: Duration of experiment in hours
+        drug: String specifying species name for the drug of interest (alpel_EC, nerat_EC, trame_EC, palbo_EC)
+        rep: String identifier for the current replicate
+        dose: Applied concentration of the drug in μM
+        egf: Serum EGF concentration in nM
+        ins: Serum INS concentration in nM
+        hgf: Serum HGF concentration in nM
+        nrg: Serum Heregulin concentration in nM
+        pdgf: Serum PDGF concentration in nM
+        igf: Serum IGF concentration in nM
+        fgf: Serum FGF concentration in nM
     Upon completion of simulations, the results are saved to disk in a folder structure corresponding to drug name, replicate identifier and
     drug dose respectively. For a single simulation with a specific replicate of a drug dose, outputs (temporal species trajectories)
     from all cells in each generation are 
