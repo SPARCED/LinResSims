@@ -64,7 +64,9 @@ Instructions for replicating results from the paper:
     * 8b. Install all dependencies including Python 2.0
     * 8c. Go to gr_metrics/SRC/python/scripts
     * 8d. Run python add_gr_column.py [input_path] > [output_path]    
-9. To generate dose response comparison (experiment vs. simulation) plots, copy the gr scores output file from step 8 to the 
+9. Download all experimental dose response datasets (GR-scores) from here: https://www.synapse.org/#!Synapse:syn18456348/ and place them in
+    'in_silico_drs_summary/mcf10a_drs_exp'
+10. To generate dose response comparison (experiment vs. simulation) plots, copy the gr scores output file from step 8 to the 
     'in_silico_drs_summary' folder and run analysis_grplots.py after gr scores have been calculated.
 
 
