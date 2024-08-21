@@ -10,6 +10,9 @@ Requirements:
     * scipy = 1.6.2
     * antimony = 2.12.0.3
     * python-libsbml = 5.19
+    * biopython = 1.81
+    * plotly = 5.15
+    * seaborn = 0.11.2
 
 
 
