@@ -28,7 +28,7 @@ Instructions for replicating results from the paper:
 2. Go to scripts directory and run createModel.py to build model. Verify model sbml file (SPARCED.xml) and AMICI-compiled model (SPARCED folder
     in the main directory).
 3. Once the model build process is complete, MPI can be used to run cell population simulations using the following command:   
-    mpirun -np [n_cpu] python cellpop_drs.py --arguments [argument_value]
+    mpirun -np [n_cpu] python cellpop_drs.py --arguments [argument_value]   
     Here, n_cpu  is the number of MPI processes that the user decides to use for parallelization.
 4. Simulation code accepts the following command line arguments:
     * sim_name: An arbitrary string defined by the user to create a directory under sparced/output where simulation outputs will be saved.
@@ -37,13 +37,16 @@ Instructions for replicating results from the paper:
     * drug: String specifying species name for the drug of interest (alpel_EC, nerat_EC, trame_EC, palbo_EC)
     * rep: String identifier for the current replicate
     * dose: Applied concentration of the drug in μM
-    * egf: Serum EGF concentration in nM
-    * ins: Serum INS concentration in nM
-    * hgf: Serum HGF concentration in nM
-    * nrg: Serum Heregulin concentration in nM
-    * pdgf: Serum PDGF concentration in nM
-    * igf: Serum IGF concentration in nM
-    * fgf: Serum FGF concentration in nM
+    * egf: Serum EGF concentration in nM (optional)
+    * ins: Serum INS concentration in nM (optional)
+    * hgf: Serum HGF concentration in nM (optional)
+    * nrg: Serum Heregulin concentration in nM (optional)
+    * pdgf: Serum PDGF concentration in nM (optional)
+    * igf: Serum IGF concentration in nM (optional)
+    * fgf: Serum FGF concentration in nM (optional)
+    For example, to run the first replicate of cell population simulation with 0.003162 &muM dose of trametinib for 72 hours, with 100 starting cells, using
+    the name 'in_silico_drs' and 16 CPUs, the following command can be entered:
+    mpirun -np 16 python cellpop_drs.py --sim_name in_silico_drs --cellpop 100 --exp_time 72 --drug trame_EC --dose 0.003162 --rep rep1   
     Upon completion of simulations, the results are saved to disk in a folder structure corresponding to drug name, replicate identifier and
     drug dose respectively. For a single simulation with a specific replicate of a drug dose, outputs (temporal species trajectories)
     from all cells in each generation are 
