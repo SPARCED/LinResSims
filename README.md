@@ -44,7 +44,7 @@ Instructions for replicating results from the paper:
     * pdgf: Serum PDGF concentration in nM (optional)
     * igf: Serum IGF concentration in nM (optional)
     * fgf: Serum FGF concentration in nM (optional)   
-    For example, to run the first replicate of cell population simulation with 0.003162 &#956 M dose of trametinib for 72 hours, with 100 starting cells, using
+    For example, to run the first replicate of cell population simulation with 0.003162 μM dose of trametinib for 72 hours, with 100 starting cells, using
     the name 'in_silico_drs' and 16 CPUs, the following command can be entered:
     mpirun -np 16 python cellpop_drs.py --sim_name in_silico_drs --cellpop 100 --exp_time 72 --drug trame_EC --dose 0.003162 --rep rep1   
     Upon completion of simulations, the results are saved to disk in a folder structure corresponding to drug name, replicate identifier and
