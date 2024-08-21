@@ -27,7 +27,7 @@ Instructions for replicating results from the paper:
    For detailed instruction on the input files visit: https://github.com/birtwistlelab/SPARCED
 2. Go to scripts directory and run createModel.py to build model. Verify model sbml file (SPARCED.xml) and AMICI-compiled model (SPARCED folder
     in the main directory).
-3. Once the model build process is complete, MPI can be used to run cell population simulations using the following command:
+3. Once the model build process is complete, MPI can be used to run cell population simulations using the following command:   
     mpirun -np [n_cpu] python cellpop_drs.py --arguments [argument_value]
     Here, n_cpu  is the number of MPI processes that the user decides to use for parallelization.
 4. Simulation code accepts the following command line arguments:
