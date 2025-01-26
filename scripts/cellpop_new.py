@@ -57,6 +57,7 @@ args = parser.parse_args()
 
 cd = os.getcwd()
 wd = os.path.dirname(cd)
+sys.path.append(os.path.join(wd,'bin'))
 
 cell_pop = int(args.cellpop)
 exp_time = float(args.exp_time)
@@ -80,13 +81,13 @@ output_dir = output_path
 def system_of_odes(t, y, params):
     dydt = np.zeros(6)
     
-    params_new = []
+    # params_new = []
     
-    for param in params:
-        param_new = param + 0.001*np.random.normal(0,np.sqrt(param))
-        params_new.append(param_new)
+    # for param in params:
+    #     param_new = param + 0.001*np.random.normal(0,np.sqrt(param))
+    #     params_new.append(param_new)
     
-    params = np.array(params_new)
+    # params = np.array(params_new)
     
     Y = y[0]
     YP = y[1]
@@ -166,24 +167,25 @@ cc_marker = 'cyclin-P/cdc2'
 
 #%%
 
+from modules.RunTyson import RunTyson
 
-def RunTyson(y0,th):
+# def RunTyson(y0,th,params):
     
-    t_min = th*60
+#     t_min = th*60
     
-    t_span = (0,t_min)
+#     t_span = (0,t_min)
     
-    n_tp = int(t_span[1]*2+1)
+#     n_tp = int(t_span[1]*2+1)
     
-    solution = solve_ivp(system_of_odes, t_span, y0, t_eval=np.linspace(t_span[0], t_span[1], n_tp), args=(params,),method='LSODA')
-    t = solution.t
-    y = solution.y
+#     solution = solve_ivp(system_of_odes, t_span, y0, t_eval=np.linspace(t_span[0], t_span[1], n_tp), args=(params,),method='LSODA')
+#     t = solution.t
+#     y = solution.y
     
-    tout_all = t
-    xoutS_all = np.transpose(y)
+#     tout_all = t
+#     xoutS_all = np.transpose(y)
 
     
-    return xoutS_all, tout_all
+#     return xoutS_all, tout_all
 
 
 
@@ -231,7 +233,7 @@ for task in range(cell0, cell_end):
 
     
     
-    xoutS_all, tout_all = RunTyson(y0,th)
+    xoutS_all, tout_all = RunTyson(y0,th,params)
 
 
     
@@ -333,7 +335,7 @@ for task in range(g0_cell_start, g0_cell_end):
     sp_input[np.argwhere(sp_input <= 1e-6)] = 0.0
 
     
-    xoutS_all, tout_all = RunTyson(sp_input,th_g0)
+    xoutS_all, tout_all = RunTyson(sp_input,th_g0,params)
     
     np.random.seed()
     tp_g0 = np.random.randint(0,np.shape(xoutS_all)[0])
@@ -492,7 +494,7 @@ for task in range(g1_cell_start, g1_cell_end):
     sp_input = np.array(sp_input)
     sp_input[np.argwhere(sp_input <= 1e-6)] = 0.0
 
-    xoutS_g1, tout_g1 = RunTyson(sp_input,th)
+    xoutS_g1, tout_g1 = RunTyson(sp_input,th,params)
     
     xoutS_mb_g0 = x_s_g0
     xoutS_mb_g1 = xoutS_g1[:,list(species_all).index(cc_marker)]
@@ -712,7 +714,7 @@ while cellpop_gn0 > 0:
         sp0 = ic_gn0[cell_n-1]
 
         
-        xoutS_all, tout_all = RunTyson(sp0,th_gc)
+        xoutS_all, tout_all = RunTyson(sp0,th_gc,params)
         
         tout_all = tout_all + (th-th_gc)*60
         # Downsample single cell outputs to every 20th timepoint      
