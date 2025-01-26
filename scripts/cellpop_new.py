@@ -18,6 +18,7 @@ from datetime import datetime
 from scipy.signal import find_peaks
 import itertools
 import sys
+import json
 #%%
 
 
@@ -57,12 +58,24 @@ args = parser.parse_args()
 
 cd = os.getcwd()
 wd = os.path.dirname(cd)
+sys.path.append(os.path.join(wd,'bin'))
+config_path = (os.path.join(wd,'sim_configs'))
 
+
+config_file = 'default.json'
+
+with open(os.path.join(config_path,config_file),"r") as config_f:
+    sim_config = json.load(config_f)
+
+
+
+#%%
 cell_pop = int(args.cellpop)
 exp_time = float(args.exp_time)
 
 
 sim_name = str(args.sim_name)
+sim_name = str(sim_config['sim_name'])
 
 output_path = os.path.join(wd,'output',sim_name)
 
@@ -74,57 +87,6 @@ if rank==0:
 output_dir = output_path
 
 #%%
-
-
-# Define the system of ODEs with parameters
-def system_of_odes(t, y, params):
-    dydt = np.zeros(6)
-    
-    params_new = []
-    
-    for param in params:
-        param_new = param + 0.001*np.random.normal(0,np.sqrt(param))
-        params_new.append(param_new)
-    
-    params = np.array(params_new)
-    
-    Y = y[0]
-    YP = y[1]
-    C2 = y[2]
-    CP = y[3]
-    M = y[4]
-    pM = y[5]
-    
-    k1norm = params[0]
-    k2 = params[1]
-    k3 = params[2]
-    k4prime = params[3]
-    k4 = params[4]
-    k5 = params[5]
-    k6 = params[6]
-    k7 = params[7]
-    k8 = params[8]
-    k9 = params[9]
-    
-    k1 = k1norm*(C2 + CP + pM + M)
-    CT = C2 + CP + pM + M
-    
-    
-    dY = k1 - k2*Y - k3*CP*Y
-    dYP = -k7*YP + k6*M
-    dC2 = k6*M + k9*CP - k8*C2
-    dCP = k8*C2 - k9*CP - k3*CP*Y
-    dM = -k6*M -k5*M + pM*(k4prime + k4*(M/CT)**2)
-    dpM = k3*CP*Y - pM*(k4prime + k4*(M/CT)**2) + k5*M
-    
-    
-    dydt[0] = dY
-    dydt[1] = dYP
-    dydt[2] = dC2
-    dydt[3] = dCP
-    dydt[4] = dM
-    dydt[5] = dpM
-    return dydt
 
 # Define parameters for the system
 # Corresponding to the coefficients in the equations
@@ -166,24 +128,8 @@ cc_marker = 'cyclin-P/cdc2'
 
 #%%
 
+from modules.RunTyson import RunTyson
 
-def RunTyson(y0,th):
-    
-    t_min = th*60
-    
-    t_span = (0,t_min)
-    
-    n_tp = int(t_span[1]*2+1)
-    
-    solution = solve_ivp(system_of_odes, t_span, y0, t_eval=np.linspace(t_span[0], t_span[1], n_tp), args=(params,),method='LSODA')
-    t = solution.t
-    y = solution.y
-    
-    tout_all = t
-    xoutS_all = np.transpose(y)
-
-    
-    return xoutS_all, tout_all
 
 
 
@@ -231,7 +177,7 @@ for task in range(cell0, cell_end):
 
     
     
-    xoutS_all, tout_all = RunTyson(y0,th)
+    xoutS_all, tout_all = RunTyson(y0,th,params)
 
 
     
@@ -282,25 +228,7 @@ results_preinc = comm.bcast(results_preinc, root = 0)
 # preincubation stage.
 comm.Barrier()
 
-#%%
 
-
-# solution = solve_ivp(system_of_odes, t_span, y0, t_eval=np.linspace(t_span[0], t_span[1], 200), args=(params,),method='LSODA')
-
-# # Extract the results
-# t = solution.t
-# y = solution.y
-
-# # Plot the solution
-# plt.figure(figsize=(10, 6))
-# for i in range(6):
-#     plt.plot(t, y[i], label=labels[i])
-# plt.xlabel("Time t (min)")
-# # plt.ylabel("Values of x1, x2, ..., x6")
-# # plt.title("Solution of a System of 6 Coupled ODEs with Parameters")
-# plt.legend()
-# plt.grid()
-# plt.show()
 
 #%% g0
 
@@ -333,7 +261,7 @@ for task in range(g0_cell_start, g0_cell_end):
     sp_input[np.argwhere(sp_input <= 1e-6)] = 0.0
 
     
-    xoutS_all, tout_all = RunTyson(sp_input,th_g0)
+    xoutS_all, tout_all = RunTyson(sp_input,th_g0,params)
     
     np.random.seed()
     tp_g0 = np.random.randint(0,np.shape(xoutS_all)[0])
@@ -492,7 +420,7 @@ for task in range(g1_cell_start, g1_cell_end):
     sp_input = np.array(sp_input)
     sp_input[np.argwhere(sp_input <= 1e-6)] = 0.0
 
-    xoutS_g1, tout_g1 = RunTyson(sp_input,th)
+    xoutS_g1, tout_g1 = RunTyson(sp_input,th,params)
     
     xoutS_mb_g0 = x_s_g0
     xoutS_mb_g1 = xoutS_g1[:,list(species_all).index(cc_marker)]
@@ -712,7 +640,7 @@ while cellpop_gn0 > 0:
         sp0 = ic_gn0[cell_n-1]
 
         
-        xoutS_all, tout_all = RunTyson(sp0,th_gc)
+        xoutS_all, tout_all = RunTyson(sp0,th_gc,params)
         
         tout_all = tout_all + (th-th_gc)*60
         # Downsample single cell outputs to every 20th timepoint      
