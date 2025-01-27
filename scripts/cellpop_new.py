@@ -68,14 +68,18 @@ config_file = str(args.sim_config)
 with open(os.path.join(config_path,config_file),"r") as config_f:
     sim_config = json.load(config_f)
 
+#%%
+from modules.sim_utils import args_override
+
+sim_config = args_override(sim_config,args)
 
 
 #%%
-cell_pop = int(args.cellpop)
-exp_time = float(args.exp_time)
+cell_pop = int(sim_config['cellpop'])
+exp_time = float(sim_config['exp_time'])
 
 
-sim_name = str(args.sim_name)
+
 sim_name = str(sim_config['sim_name'])
 
 output_path = os.path.join(wd,'output',sim_name)
