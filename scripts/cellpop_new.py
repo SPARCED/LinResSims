@@ -19,6 +19,7 @@ from scipy.signal import find_peaks
 import itertools
 import sys
 import json
+from importlib import import_module
 #%%
 
 
@@ -45,6 +46,7 @@ parser.add_argument('--nrg', metavar='nrg', help='input H conc in nM', default =
 parser.add_argument('--pdgf', metavar='pdgf', help='input PDGF conc in nM', default = 0.0)
 parser.add_argument('--igf', metavar='igf', help='input IGF conc in nM', default = 0.0)
 parser.add_argument('--fgf', metavar='fgf', help='input FGF conc in nM', default = 0.0)
+parser.add_argument('--sim_config', metavar='sim_config', help='sim config file name', default='default.json')
 
 # parser.add_argument('--override_param', metavar='override_param',default = 0.0)
 # parser.add_argument('--override_ic', metavar='override_ic',default = 0.0)
@@ -62,19 +64,23 @@ sys.path.append(os.path.join(wd,'bin'))
 config_path = (os.path.join(wd,'sim_configs'))
 
 
-config_file = 'default.json'
+config_file = str(args.sim_config)
 
 with open(os.path.join(config_path,config_file),"r") as config_f:
     sim_config = json.load(config_f)
 
+#%%
+from modules.sim_utils import args_override
+
+sim_config = args_override(sim_config,args)
 
 
 #%%
-cell_pop = int(args.cellpop)
-exp_time = float(args.exp_time)
+cell_pop = int(sim_config['cellpop'])
+exp_time = float(sim_config['exp_time'])
 
 
-sim_name = str(args.sim_name)
+
 sim_name = str(sim_config['sim_name'])
 
 output_path = os.path.join(wd,'output',sim_name)
@@ -124,37 +130,41 @@ y0 = [Y, YP, C2, CP, M, pM]  # Initial conditions for x1, x2, ..., x6
 labels = ['cyclin','cyclin-P','cdc2','cdc2-P','cyclin-P/cdc2','cyclin-P/cdc2-P']
 # Solve the system of ODEs
 species_all = ['cyclin','cyclin-P','cdc2','cdc2-P','cyclin-P/cdc2','cyclin-P/cdc2-P']
-cc_marker = 'cyclin-P/cdc2'
+cc_marker = str(sim_config["cc_marker"])
 
 #%%
 
-from modules.RunTyson import RunTyson
+# from modules.RunTyson import RunTyson
 
+module_name = "modules.RunTyson"
 
+function_name = "RunTyson"
 
+RunTyson = getattr(import_module(module_name),function_name)
 
 
 #%%
+from modules.sim_utils import assign_tasks
 
-def assign_tasks(rank,n_cells,size):
+# def assign_tasks(rank,n_cells,size):
     
-    cells_per_rank = n_cells // int(size)
-    remainder = n_cells % int(size)
+#     cells_per_rank = n_cells // int(size)
+#     remainder = n_cells % int(size)
     
-    if rank < remainder:
-        my_cells = cells_per_rank + 1
-        start_cell = rank * my_cells + 1
-    else:
-        my_cells = cells_per_rank
-        start_cell = rank * cells_per_rank + remainder + 1
+#     if rank < remainder:
+#         my_cells = cells_per_rank + 1
+#         start_cell = rank * my_cells + 1
+#     else:
+#         my_cells = cells_per_rank
+#         start_cell = rank * cells_per_rank + remainder + 1
         
-    return start_cell, start_cell + my_cells
+#     return start_cell, start_cell + my_cells
 
 
 #%%
 
 
-th = 2
+th_preinc = int(sim_config["preinc_time"])
 
 cellpop_preinc = int(cell_pop)
 
@@ -177,7 +187,7 @@ for task in range(cell0, cell_end):
 
     
     
-    xoutS_all, tout_all = RunTyson(y0,th,params)
+    xoutS_all, tout_all = RunTyson(y0,th_preinc,params)
 
 
     
@@ -233,7 +243,7 @@ comm.Barrier()
 #%% g0
 
 
-th_g0 = 2
+th_g0 = int(sim_config["gen0_time"])
 
 cellpop_g0 = cell_pop
 
