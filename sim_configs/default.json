@@ -1,0 +1,24 @@
+{
+  "sim_name": "testmpi_cc",
+  "time_unit": "minute",
+  "exp_time": 6,
+  "preinc_time": 2,
+  "gen0_time": 2,
+  "cc_marker": "cyclin-P/cdc2",
+  "cellpop": 5,
+  "td": 48,
+  "mb_tr": 0.05,
+  "stim": {
+      "egf": 3.308,
+      "ins": 1721.76,
+      "hgf": 0.0,
+      "nrg": 0.0,
+      "pdgf": 0.0,
+      "igf": 0.0,
+      "fgf": 0.0
+  },
+  "parameters": {
+    "gravity": 9.81,
+    "mass": 5.0
+  }
+}
