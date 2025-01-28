@@ -19,6 +19,7 @@ from scipy.signal import find_peaks
 import itertools
 import sys
 import json
+from importlib import import_module
 #%%
 
 
@@ -133,10 +134,13 @@ cc_marker = str(sim_config["cc_marker"])
 
 #%%
 
-from modules.RunTyson import RunTyson
+# from modules.RunTyson import RunTyson
 
+module_name = "modules.RunTyson"
 
+function_name = "RunTyson"
 
+RunTyson = getattr(import_module(module_name),function_name)
 
 
 #%%
