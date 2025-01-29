@@ -19,6 +19,7 @@ from scipy.signal import find_peaks
 import itertools
 import sys
 import json
+import copy
 from importlib import import_module
 #%%
 
@@ -136,12 +137,17 @@ cc_marker = str(sim_config["cc_marker"])
 
 # from modules.RunTyson import RunTyson
 
-module_name = "modules.RunTyson"
 
-function_name = "RunTyson"
 
-RunTyson = getattr(import_module(module_name),function_name)
+function_name = str(sim_config["model_module"]["function_name"])
 
+# module_name = "modules.RunTyson"
+module_name = "modules." + function_name
+
+# function_name = "RunTyson"
+
+# RunTyson = getattr(import_module(module_name),function_name)
+RunModel = getattr(import_module(module_name),function_name)
 
 #%%
 from modules.sim_utils import assign_tasks
@@ -166,6 +172,8 @@ from modules.sim_utils import assign_tasks
 
 th_preinc = int(sim_config["preinc_time"])
 
+kwargs_default = {'th':th_preinc,'spdata':y0,'params':params}
+
 cellpop_preinc = int(cell_pop)
 
 cell0, cell_end = assign_tasks(rank,cellpop_preinc,size)
@@ -185,9 +193,15 @@ for task in range(cell0, cell_end):
     
     # Generate randomly initialized cell states for each cell in the population
 
+    kwargs_preinc = copy.deepcopy(kwargs_default)
+
+    kwargs_preinc['th'] = th_preinc
+    kwargs_preinc['spdata'] = y0    
+
+    # kwargs1 = {'th':th_preinc,'spdata':y0,'params':params}
     
-    
-    xoutS_all, tout_all = RunTyson(y0,th_preinc,params)
+    # xoutS_all, tout_all = RunModel(th_preinc,y0,params)
+    xoutS_all, tout_all = RunModel(**kwargs_preinc)
 
 
     
@@ -270,8 +284,13 @@ for task in range(g0_cell_start, g0_cell_end):
     
     sp_input[np.argwhere(sp_input <= 1e-6)] = 0.0
 
+    kwargs_g0 = copy.deepcopy(kwargs_default)
+    kwargs_g0['th'] = th_g0
+    kwargs_g0['spdata'] = sp_input
     
-    xoutS_all, tout_all = RunTyson(sp_input,th_g0,params)
+    xoutS_all, tout_all = RunModel(**kwargs_g0)
+    
+    # xoutS_all, tout_all = RunModel(th_g0,sp_input,params)
     
     np.random.seed()
     tp_g0 = np.random.randint(0,np.shape(xoutS_all)[0])
@@ -429,8 +448,14 @@ for task in range(g1_cell_start, g1_cell_end):
     sp_input = ics_g1[str(cell_n)]
     sp_input = np.array(sp_input)
     sp_input[np.argwhere(sp_input <= 1e-6)] = 0.0
+    
+    kwargs_g1 = copy.deepcopy(kwargs_default)
+    kwargs_g1['th'] = th
+    kwargs_g1['spdata'] = sp_input
+    
+    xoutS_g1, tout_g1 = RunModel(**kwargs_g1)
 
-    xoutS_g1, tout_g1 = RunTyson(sp_input,th,params)
+    # xoutS_g1, tout_g1 = RunModel(th,sp_input,params)
     
     xoutS_mb_g0 = x_s_g0
     xoutS_mb_g1 = xoutS_g1[:,list(species_all).index(cc_marker)]
@@ -649,8 +674,13 @@ while cellpop_gn0 > 0:
         
         sp0 = ic_gn0[cell_n-1]
 
+        kwargs_gn = copy.deepcopy(kwargs_default)
+        kwargs_gn['th'] = th_gc
+        kwargs_gn['spdata'] = sp0
         
-        xoutS_all, tout_all = RunTyson(sp0,th_gc,params)
+        xoutS_all, tout_all = RunModel(**kwargs_gn)
+        
+        # xoutS_all, tout_all = RunModel(th_gc,sp0,params)
         
         tout_all = tout_all + (th-th_gc)*60
         # Downsample single cell outputs to every 20th timepoint      

@@ -10,7 +10,7 @@ from scipy.integrate import solve_ivp
 from modules.TysonModule import system_of_odes
 
 
-def RunTyson(y0,th,params):
+def RunTyson(th,spdata,params):
     
     t_min = th*60
     
@@ -18,7 +18,7 @@ def RunTyson(y0,th,params):
     
     n_tp = int(t_span[1]*2+1)
     
-    solution = solve_ivp(system_of_odes, t_span, y0, t_eval=np.linspace(t_span[0], t_span[1], n_tp), args=(params,),method='LSODA')
+    solution = solve_ivp(system_of_odes, t_span, spdata, t_eval=np.linspace(t_span[0], t_span[1], n_tp), args=(params,),method='LSODA')
     t = solution.t
     y = solution.y
     
