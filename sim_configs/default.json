@@ -8,6 +8,9 @@
   "cellpop": 5,
   "td": 48,
   "mb_tr": 0.05,
+  "model_module":{
+      "function_name": "RunTyson"
+  },
   "stim": {
       "egf": 3.308,
       "ins": 1721.76,

@@ -136,9 +136,14 @@ cc_marker = str(sim_config["cc_marker"])
 
 # from modules.RunTyson import RunTyson
 
-module_name = "modules.RunTyson"
 
-function_name = "RunTyson"
+
+function_name = str(sim_config["model_module"]["function_name"])
+
+# module_name = "modules.RunTyson"
+module_name = "modules." + function_name
+
+# function_name = "RunTyson"
 
 RunTyson = getattr(import_module(module_name),function_name)
 
