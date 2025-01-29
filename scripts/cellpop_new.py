@@ -145,8 +145,8 @@ module_name = "modules." + function_name
 
 # function_name = "RunTyson"
 
-RunTyson = getattr(import_module(module_name),function_name)
-
+# RunTyson = getattr(import_module(module_name),function_name)
+RunModel = getattr(import_module(module_name),function_name)
 
 #%%
 from modules.sim_utils import assign_tasks
@@ -192,7 +192,7 @@ for task in range(cell0, cell_end):
 
     
     
-    xoutS_all, tout_all = RunTyson(y0,th_preinc,params)
+    xoutS_all, tout_all = RunModel(th_preinc,y0,params)
 
 
     
@@ -276,7 +276,7 @@ for task in range(g0_cell_start, g0_cell_end):
     sp_input[np.argwhere(sp_input <= 1e-6)] = 0.0
 
     
-    xoutS_all, tout_all = RunTyson(sp_input,th_g0,params)
+    xoutS_all, tout_all = RunModel(th_g0,sp_input,params)
     
     np.random.seed()
     tp_g0 = np.random.randint(0,np.shape(xoutS_all)[0])
@@ -435,7 +435,7 @@ for task in range(g1_cell_start, g1_cell_end):
     sp_input = np.array(sp_input)
     sp_input[np.argwhere(sp_input <= 1e-6)] = 0.0
 
-    xoutS_g1, tout_g1 = RunTyson(sp_input,th,params)
+    xoutS_g1, tout_g1 = RunModel(th,sp_input,params)
     
     xoutS_mb_g0 = x_s_g0
     xoutS_mb_g1 = xoutS_g1[:,list(species_all).index(cc_marker)]
@@ -655,7 +655,7 @@ while cellpop_gn0 > 0:
         sp0 = ic_gn0[cell_n-1]
 
         
-        xoutS_all, tout_all = RunTyson(sp0,th_gc,params)
+        xoutS_all, tout_all = RunModel(th_gc,sp0,params)
         
         tout_all = tout_all + (th-th_gc)*60
         # Downsample single cell outputs to every 20th timepoint      

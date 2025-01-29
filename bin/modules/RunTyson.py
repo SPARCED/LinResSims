@@ -10,7 +10,7 @@ from scipy.integrate import solve_ivp
 from modules.TysonModule import system_of_odes
 
 
-def RunTyson(y0,th,params):
+def RunTyson(th,y0,params):
     
     t_min = th*60
     
