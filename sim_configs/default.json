@@ -9,7 +9,8 @@
   "td": 48,
   "mb_tr": 0.05,
   "model_module":{
-      "function_name": "RunTyson"
+      "load_model": "LoadTyson",
+      "run_model": "RunTyson"
   },
   "stim": {
       "egf": 3.308,

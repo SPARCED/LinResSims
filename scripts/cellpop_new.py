@@ -112,7 +112,6 @@ params = [k1norm, k2, k3, k4prime, k4, k5, k6, k7, k8, k9]
 
 
 # Time span and initial conditions
-t_span = (0, 200)  # From t=0 to t=10
 
 Y = 0.1
 YP = 0.1
@@ -122,22 +121,24 @@ M = 0.1
 pM = 0.1
 
 
-y0 = [Y, YP, C2, CP, M, pM]  # Initial conditions for x1, x2, ..., x6
+y0 = [Y, YP, C2, CP, M, pM]
 
-labels = ['cyclin','cyclin-P','cdc2','cdc2-P','cyclin-P/cdc2','cyclin-P/cdc2-P']
-# Solve the system of ODEs
+
 species_all = ['cyclin','cyclin-P','cdc2','cdc2-P','cyclin-P/cdc2','cyclin-P/cdc2-P']
 cc_marker = str(sim_config["cc_marker"])
 
 #%%
+function_LoadModel = str(sim_config["model_module"]["load_model"])
+module_LoadModel = "modules." + function_LoadModel
+
+LoadModel = getattr(import_module(module_LoadModel),function_LoadModel)
+
+function_RunModel = str(sim_config["model_module"]["run_model"])
+
+module_RunModel = "modules." + function_RunModel
 
 
-function_name = str(sim_config["model_module"]["function_name"])
-
-module_name = "modules." + function_name
-
-
-RunModel = getattr(import_module(module_name),function_name)
+RunModel = getattr(import_module(module_RunModel),function_RunModel)
 
 #%%
 from modules.sim_utils import assign_tasks
