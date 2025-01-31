@@ -18,7 +18,7 @@ def LoadTyson(sim_config):
 
     params = [k1norm, k2, k3, k4prime, k4, k5, k6, k7, k8, k9]
 
-    t_span = (0, 200)  # From t=0 to t=10
+
 
     Y = 0.1
     YP = 0.1
@@ -29,7 +29,7 @@ def LoadTyson(sim_config):
 
     y0 = [Y, YP, C2, CP, M, pM]  # Initial conditions for x1, x2, ..., x6
 
-    labels = ['cyclin', 'cyclin-P', 'cdc2', 'cdc2-P', 'cyclin-P/cdc2', 'cyclin-P/cdc2-P']
+
     # Solve the system of ODEs
     species_all = ['cyclin', 'cyclin-P', 'cdc2', 'cdc2-P', 'cyclin-P/cdc2', 'cyclin-P/cdc2-P']
     cc_marker = str(sim_config["cc_marker"])
@@ -37,5 +37,6 @@ def LoadTyson(sim_config):
     th_preinc = int(sim_config["preinc_time"])
 
     kwargs_default = {'th': th_preinc, 'spdata': y0, 'params': params}
+    model_specs = {'species_all': species_all, 'cc_marker': cc_marker}
 
     return(model_specs,kwargs_default)
