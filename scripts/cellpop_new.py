@@ -6,10 +6,6 @@ Created on Sun Jan 12 20:04:37 2025
 """
 
 import numpy as np
-import matplotlib.pyplot as plt
-plt.rcParams['figure.dpi'] = 300
-
-from scipy.integrate import solve_ivp
 from mpi4py import MPI
 import argparse
 import os
@@ -93,78 +89,35 @@ if rank==0:
 
 output_dir = output_path
 
-#%%
-
-# Define parameters for the system
-# Corresponding to the coefficients in the equations
-
-k1norm = 0.015 
-k2 = 0
-k3 = 200
-k4prime = 0.018
-k4 = 180 
-
-k5 = 0 
-k6 = 1
-k7 = 0.6
-
-k9 = 100*k6
-k8 = 100*k9
-
-params = [k1norm, k2, k3, k4prime, k4, k5, k6, k7, k8, k9]
 
 
 
-# Time span and initial conditions
-t_span = (0, 200)  # From t=0 to t=10
 
-Y = 0.1
-YP = 0.1
-C2 = 0.5
-CP = 0.5
-M = 0.1
-pM = 0.1
-
-
-y0 = [Y, YP, C2, CP, M, pM]  # Initial conditions for x1, x2, ..., x6
-
-labels = ['cyclin','cyclin-P','cdc2','cdc2-P','cyclin-P/cdc2','cyclin-P/cdc2-P']
-# Solve the system of ODEs
-species_all = ['cyclin','cyclin-P','cdc2','cdc2-P','cyclin-P/cdc2','cyclin-P/cdc2-P']
 cc_marker = str(sim_config["cc_marker"])
 
 #%%
+function_LoadModel = str(sim_config["model_module"]["load_model"])
+module_LoadModel = "modules." + function_LoadModel
 
-# from modules.RunTyson import RunTyson
+LoadModel = getattr(import_module(module_LoadModel),function_LoadModel)
+
+model_specs,kwargs_default = LoadModel(sim_config)
+species_all = model_specs['species_all']
 
 
+function_RunModel = str(sim_config["model_module"]["run_model"])
 
-function_name = str(sim_config["model_module"]["function_name"])
+module_RunModel = "modules." + function_RunModel
 
-# module_name = "modules.RunTyson"
-module_name = "modules." + function_name
 
-# function_name = "RunTyson"
+RunModel = getattr(import_module(module_RunModel),function_RunModel)
 
-# RunTyson = getattr(import_module(module_name),function_name)
-RunModel = getattr(import_module(module_name),function_name)
+
 
 #%%
 from modules.sim_utils import assign_tasks
 
-# def assign_tasks(rank,n_cells,size):
-    
-#     cells_per_rank = n_cells // int(size)
-#     remainder = n_cells % int(size)
-    
-#     if rank < remainder:
-#         my_cells = cells_per_rank + 1
-#         start_cell = rank * my_cells + 1
-#     else:
-#         my_cells = cells_per_rank
-#         start_cell = rank * cells_per_rank + remainder + 1
-        
-#     return start_cell, start_cell + my_cells
+
 
 
 #%%
@@ -172,7 +125,7 @@ from modules.sim_utils import assign_tasks
 
 th_preinc = int(sim_config["preinc_time"])
 
-kwargs_default = {'th':th_preinc,'spdata':y0,'params':params}
+
 
 cellpop_preinc = int(cell_pop)
 
@@ -196,7 +149,7 @@ for task in range(cell0, cell_end):
     kwargs_preinc = copy.deepcopy(kwargs_default)
 
     kwargs_preinc['th'] = th_preinc
-    kwargs_preinc['spdata'] = y0    
+    # kwargs_preinc['spdata'] = y0
 
     # kwargs1 = {'th':th_preinc,'spdata':y0,'params':params}
     
