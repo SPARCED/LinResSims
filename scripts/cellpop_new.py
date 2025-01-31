@@ -6,10 +6,6 @@ Created on Sun Jan 12 20:04:37 2025
 """
 
 import numpy as np
-import matplotlib.pyplot as plt
-plt.rcParams['figure.dpi'] = 300
-
-from scipy.integrate import solve_ivp
 from mpi4py import MPI
 import argparse
 import os
@@ -135,36 +131,18 @@ cc_marker = str(sim_config["cc_marker"])
 
 #%%
 
-# from modules.RunTyson import RunTyson
-
-
 
 function_name = str(sim_config["model_module"]["function_name"])
 
-# module_name = "modules.RunTyson"
 module_name = "modules." + function_name
 
-# function_name = "RunTyson"
 
-# RunTyson = getattr(import_module(module_name),function_name)
 RunModel = getattr(import_module(module_name),function_name)
 
 #%%
 from modules.sim_utils import assign_tasks
 
-# def assign_tasks(rank,n_cells,size):
-    
-#     cells_per_rank = n_cells // int(size)
-#     remainder = n_cells % int(size)
-    
-#     if rank < remainder:
-#         my_cells = cells_per_rank + 1
-#         start_cell = rank * my_cells + 1
-#     else:
-#         my_cells = cells_per_rank
-#         start_cell = rank * cells_per_rank + remainder + 1
-        
-#     return start_cell, start_cell + my_cells
+
 
 
 #%%
