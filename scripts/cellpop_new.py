@@ -112,6 +112,7 @@ module_RunModel = "modules." + function_RunModel
 
 RunModel = getattr(import_module(module_RunModel),function_RunModel)
 
+model_outputs = sim_config["model_module"]["output"]
 
 
 #%%
@@ -241,9 +242,18 @@ for task in range(g0_cell_start, g0_cell_end):
     kwargs_g0['th'] = th_g0
     kwargs_g0['spdata'] = sp_input
     
-    xoutS_all, tout_all = RunModel(**kwargs_g0)
+    # xoutS_all, tout_all = RunModel(**kwargs_g0)
+    
+    RunModel_returns = RunModel(**kwargs_g0)
+    
+    RunModel_outputs = {}
+    
+    for output_idx,output_key in enumerate(model_outputs):
+        RunModel_outputs[output_key] = RunModel_returns[output_idx]
     
     # xoutS_all, tout_all = RunModel(th_g0,sp_input,params)
+    tout_all = RunModel_outputs[model_outputs[1]]
+    xoutS_all = RunModel_outputs[model_outputs[0]]
     
     np.random.seed()
     tp_g0 = np.random.randint(0,np.shape(xoutS_all)[0])
