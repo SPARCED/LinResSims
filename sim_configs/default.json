@@ -10,7 +10,8 @@
   "mb_tr": 0.05,
   "model_module":{
       "load_model": "LoadTyson",
-      "run_model": "RunTyson"
+      "run_model": "RunTyson",
+      "output": ["xoutS","tout"]
   },
   "stim": {
       "egf": 3.308,
