@@ -155,15 +155,20 @@ for task in range(cell0, cell_end):
     # kwargs1 = {'th':th_preinc,'spdata':y0,'params':params}
     
     # xoutS_all, tout_all = RunModel(th_preinc,y0,params)
-    xoutS_all, tout_all = RunModel(**kwargs_preinc)
-
+    # xoutS_all, tout_all = RunModel(**kwargs_preinc) # restore xoutS_all
+    
+    RunModel_returns = RunModel(**kwargs_preinc)
+    RunModel_outputs = {}
+    
+    for output_idx,output_key in enumerate(model_outputs):
+        RunModel_outputs[output_key] = RunModel_returns[output_idx]
 
     
 
     # Extract the final state of the cell after preincubation for 
     # initial conditions in the subsequent gen 0 simulation. 
     
-    preinc_IC = xoutS_all[-1]
+    preinc_IC = RunModel_outputs['xoutS'][-1]
     
 
     
@@ -252,13 +257,14 @@ for task in range(g0_cell_start, g0_cell_end):
         RunModel_outputs[output_key] = RunModel_returns[output_idx]
     
     # xoutS_all, tout_all = RunModel(th_g0,sp_input,params)
-    tout_all = RunModel_outputs[model_outputs[1]]
-    xoutS_all = RunModel_outputs[model_outputs[0]]
+    # tout_all = RunModel_outputs[model_outputs[1]]
+    # xoutS_all = RunModel_outputs[model_outputs[0]]
     
     np.random.seed()
-    tp_g0 = np.random.randint(0,np.shape(xoutS_all)[0])
+    # tp_g0 = np.random.randint(0,np.shape(xoutS_all)[0]) # restore xoutS_all
+    tp_g0 = np.random.randint(0,np.shape(RunModel_outputs['xoutS'])[0]) # replace xoutS_all
     
-    ic_g1 = xoutS_all[tp_g0,:]
+    ic_g1 = RunModel_outputs['xoutS'][tp_g0,:]
     
     
     output_g0_cell = {}
@@ -266,7 +272,7 @@ for task in range(g0_cell_start, g0_cell_end):
 
     # Extract Cb_CDK1 trajectory to determine cell division point for gen 1 cells
     
-    output_g0_cell['xoutS'] = xoutS_all[:,list(species_all).index(cc_marker)]
+    output_g0_cell['xoutS'] = RunModel_outputs['xoutS'][:,list(species_all).index(cc_marker)]
 
     # Individual cell outputs are stored in a 
     # dictionary for each cell in the population.
@@ -416,12 +422,18 @@ for task in range(g1_cell_start, g1_cell_end):
     kwargs_g1['th'] = th
     kwargs_g1['spdata'] = sp_input
     
-    xoutS_g1, tout_g1 = RunModel(**kwargs_g1)
+    # xoutS_g1, tout_g1 = RunModel(**kwargs_g1) # restore xoutS_all
+    
+    RunModel_returns = RunModel(**kwargs_g1)
+    RunModel_outputs = {}
+    
+    for output_idx,output_key in enumerate(model_outputs):
+        RunModel_outputs[output_key] = RunModel_returns[output_idx]
 
     # xoutS_g1, tout_g1 = RunModel(th,sp_input,params)
     
     xoutS_mb_g0 = x_s_g0
-    xoutS_mb_g1 = xoutS_g1[:,list(species_all).index(cc_marker)]
+    xoutS_mb_g1 = RunModel_outputs['xoutS'][:,list(species_all).index(cc_marker)]
     
      
     tout_g0 = np.arange(0,th_g0*60+1,0.5)
@@ -437,29 +449,33 @@ for task in range(g1_cell_start, g1_cell_end):
         
         xoutS_mb_new = np.concatenate((xoutS_mb_g0[tneg_idx_start:tp_g0],xoutS_mb_g1),axis=0)
         
-        tout_new = np.concatenate((tout_g0_neg,tout_g1),axis=0)
+        tout_new = np.concatenate((tout_g0_neg,RunModel_outputs['tout']),axis=0)
     
     else:
     
         xoutS_mb_new = xoutS_mb_g1
     
-        tout_new = tout_g1
+        tout_new = RunModel_outputs['tout']
         
     # Detect cell divison event in gen 1 cell
    
     cb_peaks, _ = find_peaks(xoutS_mb_new,height=0.18)  
     
     # Downsample single cell outputs to every 20th timepoint
-    # xoutS_lite = np.array(list(itertools.islice(xoutS_g1,0,(len(xoutS_g1)-1),20)))
+    # xoutS_lite = np.array(list(itertools.islice(RunModel_outputs['xoutS'],0,(len(RunModel_outputs['xoutS'])-1),20)))
 
-    # tout_lite = np.array(list(itertools.islice(tout_g1,0,(len(tout_g1)-1),20)))
+    # tout_lite = np.array(list(itertools.islice(RunModel_outputs['tout'],0,(len(tout_g1)-1),20)))
     
     # temp - turn off downsampling
     
-    xoutS_lite = np.array(list(itertools.islice(xoutS_g1,0,(len(xoutS_g1)-1),1)))
+    # xoutS_lite = np.array(list(itertools.islice(RunModel_outputs['xoutS'],0,(len(RunModel_outputs['xoutS'])-1),1)))
 
-    tout_lite = np.array(list(itertools.islice(tout_g1,0,(len(tout_g1)-1),1)))
+    # tout_lite = np.array(list(itertools.islice(RunModel_outputs['tout'],0,(len(RunModel_outputs['tout'])-1),1)))
 
+    RunModel_outputs_lite = {}
+    
+    for output_idx,output_key in enumerate(model_outputs):
+        RunModel_outputs_lite[output_key] = np.array(list(itertools.islice(RunModel_outputs[output_key],0,(len(RunModel_outputs[output_key])-1),1)))
     
     
     
@@ -481,16 +497,16 @@ for task in range(g1_cell_start, g1_cell_end):
             
          # If a division point is found, we proceed with the gen 2 simulation 
         if ~np.isnan(dp):
-            dp_actual = dp - len(tout_new) + len(tout_g1)
-            # parp_dp = float(xoutS_g1[dp_actual,list(species_all).index('PARP')])
-            # cparp_dp = float(xoutS_g1[dp_actual,list(species_all).index('cPARP')])
+            dp_actual = dp - len(tout_new) + len(RunModel_outputs['tout'])
+            # parp_dp = float(RunModel_outputs['xoutS'][dp_actual,list(species_all).index('PARP')])
+            # cparp_dp = float(RunModel_outputs['xoutS'][dp_actual,list(species_all).index('cPARP')])
             # The PARP / cPARP threshold is used to determine cell death            
             # if parp_dp > cparp_dp:
             
                 
-            tdp_g2_cell = tout_g1[dp_actual]/60
+            tdp_g2_cell = RunModel_outputs['tout'][dp_actual]/60
             
-            sp_g2_cell = xoutS_g1[dp_actual]
+            sp_g2_cell = RunModel_outputs['xoutS'][dp_actual]
             # Assign the new cell lineage identifier for gen                 
             lin_g2_cell = 'c'+str(int(cell_n))
             
@@ -501,19 +517,24 @@ for task in range(g1_cell_start, g1_cell_end):
             g2_start['ic'] = sp_g2_cell
             
             
-            dp1 = np.where(tout_g1 == tout_new[dp])[0][0]
+            dp1 = np.where(RunModel_outputs['tout'] == tout_new[dp])[0][0]
             
             # Downsample gen 1 outputs to every 20th timepoint                
-            # xoutS_lite = np.array(list(itertools.islice(xoutS_g1,0,(dp1+1),20)))
+            # xoutS_lite = np.array(list(itertools.islice(RunModel_outputs['xoutS'],0,(dp1+1),20)))
 
             # tout_lite = np.array(list(itertools.islice(tout_g1,0,(dp1+1),20)))
             
             
             # temp turn off downsampling
             
-            xoutS_lite = np.array(list(itertools.islice(xoutS_all,0,(dp+1),1)))
+            # xoutS_lite = np.array(list(itertools.islice(RunModel_outputs['xoutS'],0,(dp+1),1)))
 
-            tout_lite = np.array(list(itertools.islice(tout_all,0,(dp+1),1)))
+            # tout_lite = np.array(list(itertools.islice(RunModel_outputs['tout'],0,(dp+1),1)))
+
+            RunModel_outputs_lite = {}
+    
+            for output_idx,output_key in enumerate(model_outputs):
+                RunModel_outputs_lite[output_key] = np.array(list(itertools.islice(RunModel_outputs[output_key],0,(len(RunModel_outputs[output_key])-1),1)))
             
 
 
@@ -521,9 +542,13 @@ for task in range(g1_cell_start, g1_cell_end):
     output_g1_cell = {}
     
     output_g1_cell['cell'] = int(cell_n)
-    output_g1_cell['xoutS'] = xoutS_lite
+    # output_g1_cell['xoutS'] = xoutS_lite
 
-    output_g1_cell['tout'] = tout_lite
+    # output_g1_cell['tout'] = tout_lite
+    
+    for output_idx,output_key in enumerate(model_outputs):
+        output_g1_cell[output_key] = RunModel_outputs_lite[output_key]
+    
     
     result_g1_cell = {}
     
@@ -641,11 +666,18 @@ while cellpop_gn0 > 0:
         kwargs_gn['th'] = th_gc
         kwargs_gn['spdata'] = sp0
         
-        xoutS_all, tout_all = RunModel(**kwargs_gn)
+        # xoutS_all, tout_all = RunModel(**kwargs_gn)
+        
+        RunModel_returns = RunModel(**kwargs_gn)
+        RunModel_outputs = {}
+        
+        for output_idx,output_key in enumerate(model_outputs):
+            RunModel_outputs[output_key] = RunModel_returns[output_idx]        
         
         # xoutS_all, tout_all = RunModel(th_gc,sp0,params)
         
-        tout_all = tout_all + (th-th_gc)*60
+        tout_all = RunModel_outputs['tout'] + (th-th_gc)*60
+        RunModel_outputs['tout'] = tout_all
         # Downsample single cell outputs to every 20th timepoint      
         # xoutS_lite = np.array(list(itertools.islice(xoutS_all,0,(len(xoutS_all)-1),20)))
 
@@ -653,14 +685,19 @@ while cellpop_gn0 > 0:
         
         # temp - turn off downsampling
         
-        xoutS_lite = xoutS_all
-        tout_lite = tout_all
+        RunModel_outputs_lite = {}
+        
+        for output_idx,output_key in enumerate(model_outputs):
+            RunModel_outputs_lite[output_key] = RunModel_outputs[output_key]
+        
+        # xoutS_lite = RunModel_outputs['xoutS']
+        # tout_lite = RunModel_outputs['tout']
         
         
         
         # Find division events in gen n
         
-        cb_peaks, _ = find_peaks(xoutS_all[:, list(species_all).index(cc_marker)],height=0.18)
+        cb_peaks, _ = find_peaks(RunModel_outputs['xoutS'][:, list(species_all).index(cc_marker)],height=0.18)
     
         gn1_start = {}        
         
@@ -669,7 +706,7 @@ while cellpop_gn0 > 0:
         if len(cb_peaks)>0:
             
     
-            dp = find_dp(xoutS_all,tout_all)
+            dp = find_dp(RunModel_outputs['xoutS'],RunModel_outputs['tout'])
     
         
             if ~np.isnan(dp):
@@ -680,9 +717,9 @@ while cellpop_gn0 > 0:
                 # if parp_dp > cparp_dp:
                     
                 
-                tdp_gn_cell = tout_all[dp]/60
+                tdp_gn_cell = RunModel_outputs['tout'][dp]/60
                 
-                sp_gn_cell = xoutS_all[dp]
+                sp_gn_cell = RunModel_outputs['xoutS'][dp]
                 
                 lin_gn_cell = str(lin_gn0[cell_n-1])+'c'+str(cell_n)
                 # Assign the new cell lineage dictionary entry for gen (n+1)                    
@@ -698,18 +735,32 @@ while cellpop_gn0 > 0:
                 # tout_lite = np.array(list(itertools.islice(tout_all,0,(dp+1),20)))
                 
                 # temp - turn off downsampling
-                xoutS_lite = np.array(list(itertools.islice(xoutS_all,0,(dp+1),1)))
+                RunModel_outputs_lite = {}
+                
+                for output_idx,output_key in enumerate(model_outputs):
+                    RunModel_outputs_lite[output_key] = np.array(list(itertools.islice(RunModel_outputs[output_key],0,(dp+1),1)))
+                    
+                
+                
+                # xoutS_lite = np.array(list(itertools.islice(RunModel_outputs['xoutS'],0,(dp+1),1)))
 
-                tout_lite = np.array(list(itertools.islice(tout_all,0,(dp+1),1)))
+                # tout_lite = np.array(list(itertools.islice(RunModel_outputs['tout'],0,(dp+1),1)))
                         
 
                 
                 
         output_gn_cell = {}
-        output_gn_cell['xoutS'] = xoutS_lite
+        # output_gn_cell['xoutS'] = xoutS_lite
 
-        output_gn_cell['tout'] = tout_lite
+        # output_gn_cell['tout'] = tout_lite
+        
+        for output_idx,output_key in enumerate(model_outputs):
+            output_gn_cell[output_key] = RunModel_outputs_lite[output_key]
+        
+        
         output_gn_cell['lin'] = str(lin_gc)
+        
+
         
         result_gn_cell = {}
         
