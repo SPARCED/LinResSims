@@ -1,20 +1,17 @@
 {
-  "sim_name": "testmpi_cc",
-  "time_unit": "minute",
+  "sim_name": "test_sparced",
+  "time_unit": "second",
   "exp_time": 6,
   "preinc_time": 2,
   "gen0_time": 2,
-  "cc_marker": "cyclin-P/cdc2",
+  "cc_marker": "Mb",
   "cellpop": 5,
   "td": 48,
   "mb_tr": 0.05,
-  "mb_peak": 0.18,
-  "tneg_hours": 2,
-  "timespan_over": 0.5,
   "model_module":{
-      "load_model": "LoadTyson",
-      "run_model": "RunTyson",
-      "output": ["xoutS","tout"]
+      "load_model": "LoadSPARCED",
+      "run_model": "RunSPARCED",
+      "output": ["xoutS",,"xoutG","tout"]
   },
   "stim": {
       "egf": 3.308,

@@ -123,6 +123,11 @@ from modules.sim_utils import assign_tasks
 
 #%%
 
+time_unit_model = sim_config["time_unit"]
+if time_unit_model == "minute":
+    time_converter = 60
+elif time_unit_model == "second":
+    time_converter = 3600
 
 th_preinc = int(sim_config["preinc_time"])
 
@@ -336,7 +341,8 @@ def find_dp(xoutS,tout,species_all=species_all):
     
     """    
     data = xoutS[:,list(species_all).index(cc_marker)]
-    p,_ = find_peaks(data,height=0.18)
+    mb_peak = float(sim_config["mb_peak"])
+    p,_ = find_peaks(data,height=mb_peak)
     b = (np.diff(np.sign(np.diff(data))) > 0).nonzero()[0] + 1
     
     if len(b)!=0:
@@ -365,7 +371,8 @@ def find_dp_all(data,species_all=species_all):
     Returns:
     dp_all : list | division points
     """
-    p,_ = find_peaks(data,height=0.18)
+    mb_peak = float(sim_config["mb_peak"])
+    p,_ = find_peaks(data,height=mb_peak)
     b = (np.diff(np.sign(np.diff(data))) > 0).nonzero()[0] + 1
     
     dp_all = []
@@ -385,8 +392,9 @@ def find_dp_all(data,species_all=species_all):
 
 
 #%%
+time_over = sim_config["timespan_over"]
 
-th = exp_time + 0.5 
+th = exp_time + time_over
 
 cellpop_g1 = cell_pop
 
@@ -436,12 +444,14 @@ for task in range(g1_cell_start, g1_cell_end):
     xoutS_mb_g1 = RunModel_outputs['xoutS'][:,list(species_all).index(cc_marker)]
     
      
-    tout_g0 = np.arange(0,th_g0*60+1,0.5)
+    tout_g0 = np.arange(0,th_g0*time_converter+1,0.5)
     tout_g0 = tout_g0[0:len(xoutS_mb_g0)]
+    
+    tneg_hours = sim_config["tneg_hours"]
 
     if len(tout_g0[:tp_g0]) > 0:
     
-        tneg_g0_min = max(tout_g0[:tp_g0]) - 2*60
+        tneg_g0_min = max(tout_g0[:tp_g0]) - tneg_hours*time_converter
         
         tneg_idx_start = np.where(tout_g0[:tp_g0]>tneg_g0_min)[0][0]
         
@@ -458,8 +468,9 @@ for task in range(g1_cell_start, g1_cell_end):
         tout_new = RunModel_outputs['tout']
         
     # Detect cell divison event in gen 1 cell
+    mb_peak = float(sim_config["mb_peak"])
    
-    cb_peaks, _ = find_peaks(xoutS_mb_new,height=0.18)  
+    cb_peaks, _ = find_peaks(xoutS_mb_new,height=mb_peak)  
     
     # Downsample single cell outputs to every 20th timepoint
     # xoutS_lite = np.array(list(itertools.islice(RunModel_outputs['xoutS'],0,(len(RunModel_outputs['xoutS'])-1),20)))
@@ -504,7 +515,7 @@ for task in range(g1_cell_start, g1_cell_end):
             # if parp_dp > cparp_dp:
             
                 
-            tdp_g2_cell = RunModel_outputs['tout'][dp_actual]/60
+            tdp_g2_cell = RunModel_outputs['tout'][dp_actual]/time_converter
             
             sp_g2_cell = RunModel_outputs['xoutS'][dp_actual]
             # Assign the new cell lineage identifier for gen                 
@@ -676,7 +687,7 @@ while cellpop_gn0 > 0:
         
         # xoutS_all, tout_all = RunModel(th_gc,sp0,params)
         
-        tout_all = RunModel_outputs['tout'] + (th-th_gc)*60
+        tout_all = RunModel_outputs['tout'] + (th-th_gc)*time_converter
         RunModel_outputs['tout'] = tout_all
         # Downsample single cell outputs to every 20th timepoint      
         # xoutS_lite = np.array(list(itertools.islice(xoutS_all,0,(len(xoutS_all)-1),20)))
@@ -696,8 +707,8 @@ while cellpop_gn0 > 0:
         
         
         # Find division events in gen n
-        
-        cb_peaks, _ = find_peaks(RunModel_outputs['xoutS'][:, list(species_all).index(cc_marker)],height=0.18)
+        mb_peak = float(sim_config["mb_peak"])
+        cb_peaks, _ = find_peaks(RunModel_outputs['xoutS'][:, list(species_all).index(cc_marker)],height=mb_peak)
     
         gn1_start = {}        
         
@@ -717,7 +728,7 @@ while cellpop_gn0 > 0:
                 # if parp_dp > cparp_dp:
                     
                 
-                tdp_gn_cell = RunModel_outputs['tout'][dp]/60
+                tdp_gn_cell = RunModel_outputs['tout'][dp]/time_converter
                 
                 sp_gn_cell = RunModel_outputs['xoutS'][dp]
                 
