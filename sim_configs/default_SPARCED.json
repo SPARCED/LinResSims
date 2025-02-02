@@ -14,7 +14,7 @@
   "model_module":{
       "load_model": "LoadSPARCED",
       "run_model": "RunSPARCED",
-      "output": ["xoutS",,"xoutG","tout"]
+      "output": ["xoutS","xoutG","tout"]
   },
   "stim": {
       "egf": 3.308,

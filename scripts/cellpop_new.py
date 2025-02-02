@@ -15,7 +15,7 @@ from scipy.signal import find_peaks
 import itertools
 import sys
 import json
-import copy
+# import copy
 from importlib import import_module
 #%%
 
@@ -152,7 +152,11 @@ for task in range(cell0, cell_end):
     
     # Generate randomly initialized cell states for each cell in the population
 
-    kwargs_preinc = copy.deepcopy(kwargs_default)
+    # kwargs_preinc = copy.deepcopy(kwargs_default)
+    kwargs_preinc = {}
+    
+    for kwargs_idx, kwargs_val in enumerate(list(kwargs_default.values())):
+        kwargs_preinc[list(kwargs_default.keys())[kwargs_idx]] = kwargs_val
 
     kwargs_preinc['th'] = th_preinc
     # kwargs_preinc['spdata'] = y0
@@ -266,7 +270,14 @@ for task in range(g0_cell_start, g0_cell_end):
             sp_input[species_all.index(lig)] = STIMligs[l]
     
 
-    kwargs_g0 = copy.deepcopy(kwargs_default)
+    # kwargs_g0 = copy.deepcopy(kwargs_default)
+    
+    kwargs_g0 = {}
+    
+    for kwargs_idx, kwargs_val in enumerate(list(kwargs_default.values())):
+        kwargs_g0[list(kwargs_default.keys())[kwargs_idx]] = kwargs_val
+    
+    
     kwargs_g0['th'] = th_g0
     kwargs_g0['spdata'] = sp_input
     
@@ -444,7 +455,12 @@ for task in range(g1_cell_start, g1_cell_end):
     sp_input = np.array(sp_input)
     sp_input[np.argwhere(sp_input <= 1e-6)] = 0.0
     
-    kwargs_g1 = copy.deepcopy(kwargs_default)
+    # kwargs_g1 = copy.deepcopy(kwargs_default)
+    
+    kwargs_g1 = {}
+    for kwargs_idx, kwargs_val in enumerate(list(kwargs_default.values())):
+        kwargs_g1[list(kwargs_default.keys())[kwargs_idx]] = kwargs_val
+    
     kwargs_g1['th'] = th
     kwargs_g1['spdata'] = sp_input
     
@@ -691,7 +707,13 @@ while cellpop_gn0 > 0:
         
         sp0 = ic_gn0[cell_n-1]
 
-        kwargs_gn = copy.deepcopy(kwargs_default)
+        # kwargs_gn = copy.deepcopy(kwargs_default)
+        
+        kwargs_gn = {}
+        
+        for kwargs_idx, kwargs_val in enumerate(list(kwargs_default.values())):
+            kwargs_gn[list(kwargs_default.keys())[kwargs_idx]] = kwargs_val
+        
         kwargs_gn['th'] = th_gc
         kwargs_gn['spdata'] = sp0
         
