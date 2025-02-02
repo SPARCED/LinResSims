@@ -1,13 +1,16 @@
 {
   "sim_name": "test_sparced",
   "time_unit": "second",
-  "exp_time": 6,
-  "preinc_time": 2,
-  "gen0_time": 2,
+  "exp_time": 48,
+  "preinc_time": 48,
+  "gen0_time": 48,
   "cc_marker": "Mb",
   "cellpop": 5,
   "td": 48,
   "mb_tr": 0.05,
+  "mb_peak": 30,
+  "tneg_hours": 16,
+  "timespan_over": 3,
   "model_module":{
       "load_model": "LoadSPARCED",
       "run_model": "RunSPARCED",
@@ -21,9 +24,5 @@
       "pdgf": 0.0,
       "igf": 0.0,
       "fgf": 0.0
-  },
-  "parameters": {
-    "gravity": 9.81,
-    "mass": 5.0
   }
 }

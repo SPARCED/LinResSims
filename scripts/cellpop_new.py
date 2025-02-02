@@ -36,13 +36,13 @@ parser.add_argument('--exp_time', metavar='exp_time', help='Enter experiment tim
 parser.add_argument('--drug', metavar='drug', help='input drug species name', default = 'trame_EC')
 parser.add_argument('--rep', metavar='rep', help='specify replicate identifier', default = 'rep1')
 parser.add_argument('--dose', metavar='dose', help='input drug dose uM', default = 0.0)
-parser.add_argument('--egf', metavar='egf', help='input E conc in nM', default = 3.308)
-parser.add_argument('--ins', metavar='ins', help='input INS conc in nM', default = 1721.76)
-parser.add_argument('--hgf', metavar='hgf', help='input HGF conc in nM', default = 0.0)
-parser.add_argument('--nrg', metavar='nrg', help='input H conc in nM', default = 0.0)
-parser.add_argument('--pdgf', metavar='pdgf', help='input PDGF conc in nM', default = 0.0)
-parser.add_argument('--igf', metavar='igf', help='input IGF conc in nM', default = 0.0)
-parser.add_argument('--fgf', metavar='fgf', help='input FGF conc in nM', default = 0.0)
+# parser.add_argument('--egf', metavar='egf', help='input E conc in nM', default = 3.308)
+# parser.add_argument('--ins', metavar='ins', help='input INS conc in nM', default = 1721.76)
+# parser.add_argument('--hgf', metavar='hgf', help='input HGF conc in nM', default = 0.0)
+# parser.add_argument('--nrg', metavar='nrg', help='input H conc in nM', default = 0.0)
+# parser.add_argument('--pdgf', metavar='pdgf', help='input PDGF conc in nM', default = 0.0)
+# parser.add_argument('--igf', metavar='igf', help='input IGF conc in nM', default = 0.0)
+# parser.add_argument('--fgf', metavar='fgf', help='input FGF conc in nM', default = 0.0)
 parser.add_argument('--sim_config', metavar='sim_config', help='sim config file name', default='default.json')
 
 # parser.add_argument('--override_param', metavar='override_param',default = 0.0)
@@ -101,7 +101,7 @@ module_LoadModel = "modules." + function_LoadModel
 
 LoadModel = getattr(import_module(module_LoadModel),function_LoadModel)
 
-model_specs,kwargs_default = LoadModel(sim_config)
+model_specs,kwargs_default = LoadModel(sim_config,wd)
 species_all = model_specs['species_all']
 
 
@@ -247,6 +247,24 @@ for task in range(g0_cell_start, g0_cell_end):
     sp_input = np.array(s_preinc_i)
     
     sp_input[np.argwhere(sp_input <= 1e-6)] = 0.0
+    
+    if "stim" in sim_config.keys():
+        stim = sim_config["stim"]
+        dose_egf = float(stim["egf"])
+        dose_ins = float(stim["ins"])
+        dose_hgf = float(stim["hgf"])
+        dose_fgf = float(stim["fgf"])
+        dose_igf = float(stim["igf"])
+        dose_pdgf = float(stim["pdgf"])
+        dose_nrg = float(stim["nrg"])
+        
+        STIMligs_id = ['E', 'H', 'HGF', 'P', 'F', 'I', 'INS']
+
+        STIMligs = [dose_egf,dose_nrg,dose_hgf,dose_pdgf,dose_fgf,dose_igf,dose_ins]
+        
+        for l,lig in enumerate(STIMligs_id):
+            sp_input[species_all.index(lig)] = STIMligs[l]
+    
 
     kwargs_g0 = copy.deepcopy(kwargs_default)
     kwargs_g0['th'] = th_g0

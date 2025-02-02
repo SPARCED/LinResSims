@@ -2,7 +2,7 @@
 
 
 
-def LoadTyson(sim_config):
+def LoadTyson(sim_config,wd):
     k1norm = 0.015
     k2 = 0
     k3 = 200
