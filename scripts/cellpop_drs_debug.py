@@ -41,7 +41,7 @@ size = comm.Get_size()
 
 parser = argparse.ArgumentParser(description='')
 
-parser.add_argument('--cellpop', metavar='cellpop', help='starting cellpopulation', default = 5)
+parser.add_argument('--cellpop', metavar='cellpop', help='starting cellpopulation', default = 1)
 parser.add_argument('--td',metavar='td', help='cell line doubling time (hrs) ', default = 48)
 parser.add_argument('--sim_name', metavar='sim_name', help='insert exp name', default = 'testmpi_tasks')
 parser.add_argument('--mb_tr',metavar='mb_tr',help='Mb trough upper limit (nM)', default = 2.0)
@@ -236,8 +236,15 @@ for task in range(cell0, cell_end):
     
     # Generate randomly initialized cell states for each cell in the population
 
+    kwargs = {'flagD':flagD,'th':th,'spdata':species_initializations,'genedata':[],'sbml_file':sbml_file,'model':model}
     
-    xoutS_all, xoutG_all, tout_all = RunSPARCED(flagD,th,species_initializations,[],sbml_file,model)
+    # xoutS_all, xoutG_all, tout_all = RunSPARCED(**kwargs)
+    
+    RunSPARCED_outputs = RunSPARCED(**kwargs)
+    
+    xoutS_all = RunSPARCED_outputs[0]
+    xoutG_all = RunSPARCED_outputs[1]
+    tout_all = RunSPARCED_outputs[2]
     
 
     # Extract the final state of the cell after preincubation for 

@@ -7,7 +7,7 @@
   "cc_marker": "Mb",
   "cellpop": 5,
   "td": 48,
-  "mb_tr": 0.05,
+  "mb_tr": 2.0,
   "mb_peak": 30,
   "tneg_hours": 16,
   "timespan_over": 3,

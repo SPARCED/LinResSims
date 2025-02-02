@@ -28,22 +28,22 @@ size = comm.Get_size()
 
 parser = argparse.ArgumentParser(description='')
 
-parser.add_argument('--cellpop', metavar='cellpop', help='starting cellpopulation', default = 5)
+parser.add_argument('--cellpop', metavar='cellpop', help='starting cellpopulation', default = 1)
 parser.add_argument('--td',metavar='td', help='cell line doubling time (hrs) ', default = 48)
 parser.add_argument('--sim_name', metavar='sim_name', help='insert exp name', default = 'testmpi_tasks')
-parser.add_argument('--mb_tr',metavar='mb_tr',help='Mb trough upper limit (nM)', default = 0.05)
+# parser.add_argument('--mb_tr',metavar='mb_tr',help='Mb trough upper limit (nM)', default = 0.05)
 parser.add_argument('--exp_time', metavar='exp_time', help='Enter experiment time in hours', default = 6)
 parser.add_argument('--drug', metavar='drug', help='input drug species name', default = 'trame_EC')
 parser.add_argument('--rep', metavar='rep', help='specify replicate identifier', default = 'rep1')
 parser.add_argument('--dose', metavar='dose', help='input drug dose uM', default = 0.0)
-# parser.add_argument('--egf', metavar='egf', help='input E conc in nM', default = 3.308)
+parser.add_argument('--egf', metavar='egf', help='input E conc in nM', default = 100.0)
 # parser.add_argument('--ins', metavar='ins', help='input INS conc in nM', default = 1721.76)
 # parser.add_argument('--hgf', metavar='hgf', help='input HGF conc in nM', default = 0.0)
 # parser.add_argument('--nrg', metavar='nrg', help='input H conc in nM', default = 0.0)
 # parser.add_argument('--pdgf', metavar='pdgf', help='input PDGF conc in nM', default = 0.0)
 # parser.add_argument('--igf', metavar='igf', help='input IGF conc in nM', default = 0.0)
 # parser.add_argument('--fgf', metavar='fgf', help='input FGF conc in nM', default = 0.0)
-parser.add_argument('--sim_config', metavar='sim_config', help='sim config file name', default='default.json')
+parser.add_argument('--sim_config', metavar='sim_config', help='sim config file name', default='default_SPARCED.json')
 
 # parser.add_argument('--override_param', metavar='override_param',default = 0.0)
 # parser.add_argument('--override_ic', metavar='override_ic',default = 0.0)
@@ -352,7 +352,7 @@ comm.Barrier()
 
 #%% Functions for finding cell division time points
 
-mb_tr = float(args.mb_tr)
+mb_tr = float(sim_config["mb_tr"])
 
 def find_dp(xoutS,tout,species_all=species_all):
     """

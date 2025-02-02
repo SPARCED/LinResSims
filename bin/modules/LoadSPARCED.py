@@ -19,8 +19,12 @@ def LoadSPARCED(sim_config,wd):
     sys.path.insert(0, os.path.join(wd,model_output_dir))
     model_module = importlib.import_module(model_name)
     model = model_module.getModel()
+    solver = model.getSolver()
+    solver.setMaxSteps = 1e10
+    ts = 30
+
     species_all = list(model.getStateIds())
-    
+    model.setTimepoints(np.linspace(0,ts))
     STIMligs_id = ['E', 'H', 'HGF', 'P', 'F', 'I', 'INS']
     species_initializations = np.array(model_module.getModel().getInitialStates())
     species_initializations[np.argwhere(species_initializations <= 1e-6)] = 0.0
