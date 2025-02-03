@@ -24,5 +24,9 @@
       "pdgf": 0.0,
       "igf": 0.0,
       "fgf": 0.0
+  },
+  "apoptosis": {
+      "formula": "cPARP/PARP",
+      "threshold": "1.0"
   }
 }

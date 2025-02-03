@@ -15,8 +15,10 @@ from scipy.signal import find_peaks
 import itertools
 import sys
 import json
+import re
 # import copy
 from importlib import import_module
+
 #%%
 
 
@@ -117,7 +119,7 @@ model_outputs = sim_config["model_module"]["output"]
 
 #%%
 from modules.sim_utils import assign_tasks
-
+from modules.sim_utils import evaluate_formula
 
 
 
@@ -543,44 +545,89 @@ for task in range(g1_cell_start, g1_cell_end):
          # If a division point is found, we proceed with the gen 2 simulation 
         if ~np.isnan(dp):
             dp_actual = dp - len(tout_new) + len(RunModel_outputs['tout'])
+            
+            if 'apoptosis' in sim_config.keys():
+                
+                apop_formula = str(sim_config['apoptosis']['formula'])
+                apop_threshold = float(sim_config['apoptosis']['threshold'])
+                
+                # evaluate_formula(RunModel_outputs['xoutS'][dp_actual,:],species_all,apop_formula,locals())
+                
+                sp_formula = re.findall(r'[a-zA-Z]\w*',apop_formula)
+                sp_formula = list(np.unique(sp_formula))
+                
+                if 'e' in sp_formula:
+                    sp_formula.remove('e')                
+                
+                values = RunModel_outputs['xoutS'][dp_actual,:]
+                labels = species_all
+                for i in range(len(sp_formula)):
+                    exec(f"{sp_formula[i]} = values[labels.index('{sp_formula[i]}')]")
+                    
+                exec(f"flagA = {apop_formula}")                
+                
+                if flagA < apop_threshold:
+                    tdp_g2_cell = RunModel_outputs['tout'][dp_actual]/time_converter
+            
+                    sp_g2_cell = RunModel_outputs['xoutS'][dp_actual]
+                    # Assign the new cell lineage identifier for gen                 
+                    lin_g2_cell = 'c'+str(int(cell_n))
+                    
+                    g2_start['cell'] = int(cell_n)
+                    g2_start['dp'] = dp
+                    g2_start['th_g2'] = th- tdp_g2_cell    
+                    g2_start['lin'] = lin_g2_cell
+                    g2_start['ic'] = sp_g2_cell
+                    
+                    
+                    dp1 = np.where(RunModel_outputs['tout'] == tout_new[dp])[0][0]
+                    
+                    RunModel_outputs_lite = {}
+    
+                    for output_idx,output_key in enumerate(model_outputs):
+                        RunModel_outputs_lite[output_key] = np.array(list(itertools.islice(RunModel_outputs[output_key],0,(len(RunModel_outputs[output_key])-1),1)))
+                    
+                    
+            
             # parp_dp = float(RunModel_outputs['xoutS'][dp_actual,list(species_all).index('PARP')])
             # cparp_dp = float(RunModel_outputs['xoutS'][dp_actual,list(species_all).index('cPARP')])
             # The PARP / cPARP threshold is used to determine cell death            
             # if parp_dp > cparp_dp:
             
+            else:
                 
-            tdp_g2_cell = RunModel_outputs['tout'][dp_actual]/time_converter
-            
-            sp_g2_cell = RunModel_outputs['xoutS'][dp_actual]
-            # Assign the new cell lineage identifier for gen                 
-            lin_g2_cell = 'c'+str(int(cell_n))
-            
-            g2_start['cell'] = int(cell_n)
-            g2_start['dp'] = dp
-            g2_start['th_g2'] = th- tdp_g2_cell    
-            g2_start['lin'] = lin_g2_cell
-            g2_start['ic'] = sp_g2_cell
-            
-            
-            dp1 = np.where(RunModel_outputs['tout'] == tout_new[dp])[0][0]
-            
-            # Downsample gen 1 outputs to every 20th timepoint                
-            # xoutS_lite = np.array(list(itertools.islice(RunModel_outputs['xoutS'],0,(dp1+1),20)))
-
-            # tout_lite = np.array(list(itertools.islice(tout_g1,0,(dp1+1),20)))
-            
-            
-            # temp turn off downsampling
-            
-            # xoutS_lite = np.array(list(itertools.islice(RunModel_outputs['xoutS'],0,(dp+1),1)))
-
-            # tout_lite = np.array(list(itertools.islice(RunModel_outputs['tout'],0,(dp+1),1)))
-
-            RunModel_outputs_lite = {}
+                tdp_g2_cell = RunModel_outputs['tout'][dp_actual]/time_converter
+                
+                sp_g2_cell = RunModel_outputs['xoutS'][dp_actual]
+                # Assign the new cell lineage identifier for gen                 
+                lin_g2_cell = 'c'+str(int(cell_n))
+                
+                g2_start['cell'] = int(cell_n)
+                g2_start['dp'] = dp
+                g2_start['th_g2'] = th- tdp_g2_cell    
+                g2_start['lin'] = lin_g2_cell
+                g2_start['ic'] = sp_g2_cell
+                
+                
+                dp1 = np.where(RunModel_outputs['tout'] == tout_new[dp])[0][0]
+                
+                # Downsample gen 1 outputs to every 20th timepoint                
+                # xoutS_lite = np.array(list(itertools.islice(RunModel_outputs['xoutS'],0,(dp1+1),20)))
     
-            for output_idx,output_key in enumerate(model_outputs):
-                RunModel_outputs_lite[output_key] = np.array(list(itertools.islice(RunModel_outputs[output_key],0,(len(RunModel_outputs[output_key])-1),1)))
-            
+                # tout_lite = np.array(list(itertools.islice(tout_g1,0,(dp1+1),20)))
+                
+                
+                # temp turn off downsampling
+                
+                # xoutS_lite = np.array(list(itertools.islice(RunModel_outputs['xoutS'],0,(dp+1),1)))
+    
+                # tout_lite = np.array(list(itertools.islice(RunModel_outputs['tout'],0,(dp+1),1)))
+    
+                RunModel_outputs_lite = {}
+        
+                for output_idx,output_key in enumerate(model_outputs):
+                    RunModel_outputs_lite[output_key] = np.array(list(itertools.islice(RunModel_outputs[output_key],0,(len(RunModel_outputs[output_key])-1),1)))
+                
 
 
     # Store gen 1 cell outputs and store as a dictionary
@@ -767,31 +814,80 @@ while cellpop_gn0 > 0:
                 
                 # if parp_dp > cparp_dp:
                     
-                
-                tdp_gn_cell = RunModel_outputs['tout'][dp]/time_converter
-                
-                sp_gn_cell = RunModel_outputs['xoutS'][dp]
-                
-                lin_gn_cell = str(lin_gn0[cell_n-1])+'c'+str(cell_n)
-                # Assign the new cell lineage dictionary entry for gen (n+1)                    
-                gn1_start['cell'] = int(cell_n)
-                gn1_start['dp'] = dp
-                gn1_start['th_gn'] = th- tdp_gn_cell    
-                gn1_start['lin'] = lin_gn_cell
-                gn1_start['ic'] = sp_gn_cell                             
-
-                # Downsample gen n outputs to every 20th timepoint    
-                # xoutS_lite = np.array(list(itertools.islice(xoutS_all,0,(dp+1),20)))
-
-                # tout_lite = np.array(list(itertools.islice(tout_all,0,(dp+1),20)))
-                
-                # temp - turn off downsampling
-                RunModel_outputs_lite = {}
-                
-                for output_idx,output_key in enumerate(model_outputs):
-                    RunModel_outputs_lite[output_key] = np.array(list(itertools.islice(RunModel_outputs[output_key],0,(dp+1),1)))
+                if 'apoptosis' in sim_config.keys():
+                    apop_formula = str(sim_config['apoptosis']['formula'])
+                    apop_threshold = float(sim_config['apoptosis']['threshold'])
                     
+                    # evaluate_formula(RunModel_outputs['xoutS'][dp_actual,:],species_all,apop_formula,locals())
+                    
+                    sp_formula = re.findall(r'[a-zA-Z]\w*',apop_formula)
+                    sp_formula = list(np.unique(sp_formula))
+                    
+                    if 'e' in sp_formula:
+                        sp_formula.remove('e')                
+                    
+                    values = RunModel_outputs['xoutS'][dp,:]
+                    labels = species_all
+                    for i in range(len(sp_formula)):
+                        exec(f"{sp_formula[i]} = values[labels.index('{sp_formula[i]}')]")
+                        
+                    exec(f"flagA = {apop_formula}")                         
+                    
+                    
+                    if flagA < apop_threshold:
+                        
+                        tdp_gn_cell = RunModel_outputs['tout'][dp]/time_converter
+                        
+                        sp_gn_cell = RunModel_outputs['xoutS'][dp]
+                        
+                        lin_gn_cell = str(lin_gn0[cell_n-1])+'c'+str(cell_n)
+                        # Assign the new cell lineage dictionary entry for gen (n+1)                    
+                        gn1_start['cell'] = int(cell_n)
+                        gn1_start['dp'] = dp
+                        gn1_start['th_gn'] = th- tdp_gn_cell    
+                        gn1_start['lin'] = lin_gn_cell
+                        gn1_start['ic'] = sp_gn_cell                             
+        
+                        # Downsample gen n outputs to every 20th timepoint    
+                        # xoutS_lite = np.array(list(itertools.islice(xoutS_all,0,(dp+1),20)))
+        
+                        # tout_lite = np.array(list(itertools.islice(tout_all,0,(dp+1),20)))
+                        
+                        # temp - turn off downsampling
+                        RunModel_outputs_lite = {}
+                        
+                        for output_idx,output_key in enumerate(model_outputs):
+                            RunModel_outputs_lite[output_key] = np.array(list(itertools.islice(RunModel_outputs[output_key],0,(dp+1),1)))
+                            
+                                    
                 
+                
+                else:
+                
+                    tdp_gn_cell = RunModel_outputs['tout'][dp]/time_converter
+                    
+                    sp_gn_cell = RunModel_outputs['xoutS'][dp]
+                    
+                    lin_gn_cell = str(lin_gn0[cell_n-1])+'c'+str(cell_n)
+                    # Assign the new cell lineage dictionary entry for gen (n+1)                    
+                    gn1_start['cell'] = int(cell_n)
+                    gn1_start['dp'] = dp
+                    gn1_start['th_gn'] = th- tdp_gn_cell    
+                    gn1_start['lin'] = lin_gn_cell
+                    gn1_start['ic'] = sp_gn_cell                             
+    
+                    # Downsample gen n outputs to every 20th timepoint    
+                    # xoutS_lite = np.array(list(itertools.islice(xoutS_all,0,(dp+1),20)))
+    
+                    # tout_lite = np.array(list(itertools.islice(tout_all,0,(dp+1),20)))
+                    
+                    # temp - turn off downsampling
+                    RunModel_outputs_lite = {}
+                    
+                    for output_idx,output_key in enumerate(model_outputs):
+                        RunModel_outputs_lite[output_key] = np.array(list(itertools.islice(RunModel_outputs[output_key],0,(dp+1),1)))
+                        
+                    
                 
                 # xoutS_lite = np.array(list(itertools.islice(RunModel_outputs['xoutS'],0,(dp+1),1)))
 
