@@ -4,7 +4,8 @@ Created on Sun Jan 26 19:55:09 2025
 
 @author: Arnab
 """
-
+import numpy as np
+import re
 
 
 def assign_tasks(rank,n_cells,size):
@@ -42,3 +43,33 @@ def args_override(config,args): # override sim_config options with commandline a
     #     config_new['exp_time'] = float(args.exp_time)
 
     return config_new
+
+
+def evaluate_formula(values, labels, formula, locals_dict):
+    """
+    Evaluates an algebraic expression using values mapped by labels.
+    
+    Parameters:
+    values (np.array): Array of values corresponding to labels.
+    labels (list): List of labels corresponding to indices in `values`.
+    formula (str): Algebraic expression as a string using label names.
+    
+    Returns:
+    float: Evaluated result.
+    """
+        
+    sp_formula = re.findall(r'[a-zA-Z]\w*',formula)
+    sp_formula = list(np.unique(sp_formula))
+    
+    if 'e' in sp_formula:
+        sp_formula.remove('e')
+        
+
+    result = None
+        
+    for i in range(len(sp_formula)):
+        exec(f"{sp_formula[i]} = values[labels.index('{sp_formula[i]}')]",globals(), locals_dict)
+        
+    exec(f"flagA = {formula}",globals(), locals_dict)
+    
+    return result

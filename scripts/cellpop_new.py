@@ -15,8 +15,10 @@ from scipy.signal import find_peaks
 import itertools
 import sys
 import json
-import copy
+import re
+# import copy
 from importlib import import_module
+
 #%%
 
 
@@ -28,22 +30,22 @@ size = comm.Get_size()
 
 parser = argparse.ArgumentParser(description='')
 
-parser.add_argument('--cellpop', metavar='cellpop', help='starting cellpopulation', default = 5)
+parser.add_argument('--cellpop', metavar='cellpop', help='starting cellpopulation', default = 1)
 parser.add_argument('--td',metavar='td', help='cell line doubling time (hrs) ', default = 48)
 parser.add_argument('--sim_name', metavar='sim_name', help='insert exp name', default = 'testmpi_tasks')
-parser.add_argument('--mb_tr',metavar='mb_tr',help='Mb trough upper limit (nM)', default = 0.05)
+# parser.add_argument('--mb_tr',metavar='mb_tr',help='Mb trough upper limit (nM)', default = 0.05)
 parser.add_argument('--exp_time', metavar='exp_time', help='Enter experiment time in hours', default = 6)
-parser.add_argument('--drug', metavar='drug', help='input drug species name', default = 'trame_EC')
-parser.add_argument('--rep', metavar='rep', help='specify replicate identifier', default = 'rep1')
-parser.add_argument('--dose', metavar='dose', help='input drug dose uM', default = 0.0)
-parser.add_argument('--egf', metavar='egf', help='input E conc in nM', default = 3.308)
-parser.add_argument('--ins', metavar='ins', help='input INS conc in nM', default = 1721.76)
-parser.add_argument('--hgf', metavar='hgf', help='input HGF conc in nM', default = 0.0)
-parser.add_argument('--nrg', metavar='nrg', help='input H conc in nM', default = 0.0)
-parser.add_argument('--pdgf', metavar='pdgf', help='input PDGF conc in nM', default = 0.0)
-parser.add_argument('--igf', metavar='igf', help='input IGF conc in nM', default = 0.0)
-parser.add_argument('--fgf', metavar='fgf', help='input FGF conc in nM', default = 0.0)
-parser.add_argument('--sim_config', metavar='sim_config', help='sim config file name', default='default.json')
+# parser.add_argument('--drug', metavar='drug', help='input drug species name', default = 'trame_EC')
+# parser.add_argument('--rep', metavar='rep', help='specify replicate identifier', default = 'rep1')
+# parser.add_argument('--dose', metavar='dose', help='input drug dose uM', default = 0.0)
+parser.add_argument('--egf', metavar='egf', help='input E conc in nM', default = 100.0)
+# parser.add_argument('--ins', metavar='ins', help='input INS conc in nM', default = 1721.76)
+# parser.add_argument('--hgf', metavar='hgf', help='input HGF conc in nM', default = 0.0)
+# parser.add_argument('--nrg', metavar='nrg', help='input H conc in nM', default = 0.0)
+# parser.add_argument('--pdgf', metavar='pdgf', help='input PDGF conc in nM', default = 0.0)
+# parser.add_argument('--igf', metavar='igf', help='input IGF conc in nM', default = 0.0)
+# parser.add_argument('--fgf', metavar='fgf', help='input FGF conc in nM', default = 0.0)
+parser.add_argument('--sim_config', metavar='sim_config', help='sim config file name', default='default_SPARCED.json')
 
 # parser.add_argument('--override_param', metavar='override_param',default = 0.0)
 # parser.add_argument('--override_ic', metavar='override_ic',default = 0.0)
@@ -86,8 +88,29 @@ if rank==0:
     if not os.path.exists(output_path):
         os.mkdir(output_path)
 
+if "drs" in sim_config.keys():
+    drug = str(sim_config["drs"]["drug"])
+    dose = float(sim_config["drs"]["dose_um"])
+    rep = str(sim_config["drs"]["rep"])
+    if sim_config["drs"]["output_partition"] == True:
+        output_rep = os.path.join(output_path,'drs_'+drug+'_'+str(rep))
 
-output_dir = output_path
+        if rank==0:
+            if not os.path.exists(output_rep):
+                os.mkdir(output_rep)
+        
+        output_dose = os.path.join(output_rep,drug+'_'+str(float(dose)))
+        
+        if rank==0:
+            if not os.path.exists(output_dose):
+                os.mkdir(output_dose)
+
+if "drs" in sim_config.keys():
+    if sim_config["drs"]["output_partition"] == True:
+        
+        output_dir = output_dose
+else:
+    output_dir = output_path
 
 
 
@@ -101,7 +124,7 @@ module_LoadModel = "modules." + function_LoadModel
 
 LoadModel = getattr(import_module(module_LoadModel),function_LoadModel)
 
-model_specs,kwargs_default = LoadModel(sim_config)
+model_specs,kwargs_default = LoadModel(sim_config,wd)
 species_all = model_specs['species_all']
 
 
@@ -120,9 +143,13 @@ from modules.sim_utils import assign_tasks
 
 
 
-
 #%%
 
+time_unit_model = sim_config["time_unit"]
+if time_unit_model == "minute":
+    time_converter = 60
+elif time_unit_model == "second":
+    time_converter = 3600
 
 th_preinc = int(sim_config["preinc_time"])
 
@@ -147,7 +174,11 @@ for task in range(cell0, cell_end):
     
     # Generate randomly initialized cell states for each cell in the population
 
-    kwargs_preinc = copy.deepcopy(kwargs_default)
+    # kwargs_preinc = copy.deepcopy(kwargs_default)
+    kwargs_preinc = {}
+    
+    for kwargs_idx, kwargs_val in enumerate(list(kwargs_default.values())):
+        kwargs_preinc[list(kwargs_default.keys())[kwargs_idx]] = kwargs_val
 
     kwargs_preinc['th'] = th_preinc
     # kwargs_preinc['spdata'] = y0
@@ -242,8 +273,33 @@ for task in range(g0_cell_start, g0_cell_end):
     sp_input = np.array(s_preinc_i)
     
     sp_input[np.argwhere(sp_input <= 1e-6)] = 0.0
+    
+    if "stim" in sim_config.keys():
+        stim = sim_config["stim"]
+        dose_egf = float(stim["egf"])
+        dose_ins = float(stim["ins"])
+        dose_hgf = float(stim["hgf"])
+        dose_fgf = float(stim["fgf"])
+        dose_igf = float(stim["igf"])
+        dose_pdgf = float(stim["pdgf"])
+        dose_nrg = float(stim["nrg"])
+        
+        STIMligs_id = ['E', 'H', 'HGF', 'P', 'F', 'I', 'INS']
 
-    kwargs_g0 = copy.deepcopy(kwargs_default)
+        STIMligs = [dose_egf,dose_nrg,dose_hgf,dose_pdgf,dose_fgf,dose_igf,dose_ins]
+        
+        for l,lig in enumerate(STIMligs_id):
+            sp_input[species_all.index(lig)] = STIMligs[l]
+    
+
+    # kwargs_g0 = copy.deepcopy(kwargs_default)
+    
+    kwargs_g0 = {}
+    
+    for kwargs_idx, kwargs_val in enumerate(list(kwargs_default.values())):
+        kwargs_g0[list(kwargs_default.keys())[kwargs_idx]] = kwargs_val
+    
+    
     kwargs_g0['th'] = th_g0
     kwargs_g0['spdata'] = sp_input
     
@@ -318,7 +374,7 @@ comm.Barrier()
 
 #%% Functions for finding cell division time points
 
-mb_tr = float(args.mb_tr)
+mb_tr = float(sim_config["mb_tr"])
 
 def find_dp(xoutS,tout,species_all=species_all):
     """
@@ -336,7 +392,8 @@ def find_dp(xoutS,tout,species_all=species_all):
     
     """    
     data = xoutS[:,list(species_all).index(cc_marker)]
-    p,_ = find_peaks(data,height=0.18)
+    mb_peak = float(sim_config["mb_peak"])
+    p,_ = find_peaks(data,height=mb_peak)
     b = (np.diff(np.sign(np.diff(data))) > 0).nonzero()[0] + 1
     
     if len(b)!=0:
@@ -365,7 +422,8 @@ def find_dp_all(data,species_all=species_all):
     Returns:
     dp_all : list | division points
     """
-    p,_ = find_peaks(data,height=0.18)
+    mb_peak = float(sim_config["mb_peak"])
+    p,_ = find_peaks(data,height=mb_peak)
     b = (np.diff(np.sign(np.diff(data))) > 0).nonzero()[0] + 1
     
     dp_all = []
@@ -385,8 +443,9 @@ def find_dp_all(data,species_all=species_all):
 
 
 #%%
+time_over = sim_config["timespan_over"]
 
-th = exp_time + 0.5 
+th = exp_time + time_over
 
 cellpop_g1 = cell_pop
 
@@ -418,7 +477,19 @@ for task in range(g1_cell_start, g1_cell_end):
     sp_input = np.array(sp_input)
     sp_input[np.argwhere(sp_input <= 1e-6)] = 0.0
     
-    kwargs_g1 = copy.deepcopy(kwargs_default)
+    # kwargs_g1 = copy.deepcopy(kwargs_default)
+    
+    if "drs" in sim_config.keys():
+        drug = str(sim_config["drs"]["drug"])
+        dose_nm = float(sim_config["drs"]["dose_um"])*10e2
+        sp_input[species_all.index(drug)] = dose_nm
+
+    
+    
+    kwargs_g1 = {}
+    for kwargs_idx, kwargs_val in enumerate(list(kwargs_default.values())):
+        kwargs_g1[list(kwargs_default.keys())[kwargs_idx]] = kwargs_val
+    
     kwargs_g1['th'] = th
     kwargs_g1['spdata'] = sp_input
     
@@ -436,12 +507,14 @@ for task in range(g1_cell_start, g1_cell_end):
     xoutS_mb_g1 = RunModel_outputs['xoutS'][:,list(species_all).index(cc_marker)]
     
      
-    tout_g0 = np.arange(0,th_g0*60+1,0.5)
+    tout_g0 = np.arange(0,th_g0*time_converter+1,0.5)
     tout_g0 = tout_g0[0:len(xoutS_mb_g0)]
+    
+    tneg_hours = sim_config["tneg_hours"]
 
     if len(tout_g0[:tp_g0]) > 0:
     
-        tneg_g0_min = max(tout_g0[:tp_g0]) - 2*60
+        tneg_g0_min = max(tout_g0[:tp_g0]) - tneg_hours*time_converter
         
         tneg_idx_start = np.where(tout_g0[:tp_g0]>tneg_g0_min)[0][0]
         
@@ -458,8 +531,9 @@ for task in range(g1_cell_start, g1_cell_end):
         tout_new = RunModel_outputs['tout']
         
     # Detect cell divison event in gen 1 cell
+    mb_peak = float(sim_config["mb_peak"])
    
-    cb_peaks, _ = find_peaks(xoutS_mb_new,height=0.18)  
+    cb_peaks, _ = find_peaks(xoutS_mb_new,height=mb_peak)  
     
     # Downsample single cell outputs to every 20th timepoint
     # xoutS_lite = np.array(list(itertools.islice(RunModel_outputs['xoutS'],0,(len(RunModel_outputs['xoutS'])-1),20)))
@@ -498,44 +572,89 @@ for task in range(g1_cell_start, g1_cell_end):
          # If a division point is found, we proceed with the gen 2 simulation 
         if ~np.isnan(dp):
             dp_actual = dp - len(tout_new) + len(RunModel_outputs['tout'])
+            
+            if 'apoptosis' in sim_config.keys():
+                
+                apop_formula = str(sim_config['apoptosis']['formula'])
+                apop_threshold = float(sim_config['apoptosis']['threshold'])
+                
+                # evaluate_formula(RunModel_outputs['xoutS'][dp_actual,:],species_all,apop_formula,locals())
+                
+                sp_formula = re.findall(r'[a-zA-Z]\w*',apop_formula)
+                sp_formula = list(np.unique(sp_formula))
+                
+                if 'e' in sp_formula:
+                    sp_formula.remove('e')                
+                
+                values = RunModel_outputs['xoutS'][dp_actual,:]
+                labels = species_all
+                for i in range(len(sp_formula)):
+                    exec(f"{sp_formula[i]} = values[labels.index('{sp_formula[i]}')]")
+                    
+                exec(f"flagA = {apop_formula}")                
+                
+                if flagA < apop_threshold:
+                    tdp_g2_cell = RunModel_outputs['tout'][dp_actual]/time_converter
+            
+                    sp_g2_cell = RunModel_outputs['xoutS'][dp_actual]
+                    # Assign the new cell lineage identifier for gen                 
+                    lin_g2_cell = 'c'+str(int(cell_n))
+                    
+                    g2_start['cell'] = int(cell_n)
+                    g2_start['dp'] = dp
+                    g2_start['th_g2'] = th- tdp_g2_cell    
+                    g2_start['lin'] = lin_g2_cell
+                    g2_start['ic'] = sp_g2_cell
+                    
+                    
+                    dp1 = np.where(RunModel_outputs['tout'] == tout_new[dp])[0][0]
+                    
+                    RunModel_outputs_lite = {}
+    
+                    for output_idx,output_key in enumerate(model_outputs):
+                        RunModel_outputs_lite[output_key] = np.array(list(itertools.islice(RunModel_outputs[output_key],0,(len(RunModel_outputs[output_key])-1),1)))
+                    
+                    
+            
             # parp_dp = float(RunModel_outputs['xoutS'][dp_actual,list(species_all).index('PARP')])
             # cparp_dp = float(RunModel_outputs['xoutS'][dp_actual,list(species_all).index('cPARP')])
             # The PARP / cPARP threshold is used to determine cell death            
             # if parp_dp > cparp_dp:
             
+            else:
                 
-            tdp_g2_cell = RunModel_outputs['tout'][dp_actual]/60
-            
-            sp_g2_cell = RunModel_outputs['xoutS'][dp_actual]
-            # Assign the new cell lineage identifier for gen                 
-            lin_g2_cell = 'c'+str(int(cell_n))
-            
-            g2_start['cell'] = int(cell_n)
-            g2_start['dp'] = dp
-            g2_start['th_g2'] = th- tdp_g2_cell    
-            g2_start['lin'] = lin_g2_cell
-            g2_start['ic'] = sp_g2_cell
-            
-            
-            dp1 = np.where(RunModel_outputs['tout'] == tout_new[dp])[0][0]
-            
-            # Downsample gen 1 outputs to every 20th timepoint                
-            # xoutS_lite = np.array(list(itertools.islice(RunModel_outputs['xoutS'],0,(dp1+1),20)))
-
-            # tout_lite = np.array(list(itertools.islice(tout_g1,0,(dp1+1),20)))
-            
-            
-            # temp turn off downsampling
-            
-            # xoutS_lite = np.array(list(itertools.islice(RunModel_outputs['xoutS'],0,(dp+1),1)))
-
-            # tout_lite = np.array(list(itertools.islice(RunModel_outputs['tout'],0,(dp+1),1)))
-
-            RunModel_outputs_lite = {}
+                tdp_g2_cell = RunModel_outputs['tout'][dp_actual]/time_converter
+                
+                sp_g2_cell = RunModel_outputs['xoutS'][dp_actual]
+                # Assign the new cell lineage identifier for gen                 
+                lin_g2_cell = 'c'+str(int(cell_n))
+                
+                g2_start['cell'] = int(cell_n)
+                g2_start['dp'] = dp
+                g2_start['th_g2'] = th- tdp_g2_cell    
+                g2_start['lin'] = lin_g2_cell
+                g2_start['ic'] = sp_g2_cell
+                
+                
+                dp1 = np.where(RunModel_outputs['tout'] == tout_new[dp])[0][0]
+                
+                # Downsample gen 1 outputs to every 20th timepoint                
+                # xoutS_lite = np.array(list(itertools.islice(RunModel_outputs['xoutS'],0,(dp1+1),20)))
     
-            for output_idx,output_key in enumerate(model_outputs):
-                RunModel_outputs_lite[output_key] = np.array(list(itertools.islice(RunModel_outputs[output_key],0,(len(RunModel_outputs[output_key])-1),1)))
-            
+                # tout_lite = np.array(list(itertools.islice(tout_g1,0,(dp1+1),20)))
+                
+                
+                # temp turn off downsampling
+                
+                # xoutS_lite = np.array(list(itertools.islice(RunModel_outputs['xoutS'],0,(dp+1),1)))
+    
+                # tout_lite = np.array(list(itertools.islice(RunModel_outputs['tout'],0,(dp+1),1)))
+    
+                RunModel_outputs_lite = {}
+        
+                for output_idx,output_key in enumerate(model_outputs):
+                    RunModel_outputs_lite[output_key] = np.array(list(itertools.islice(RunModel_outputs[output_key],0,(len(RunModel_outputs[output_key])-1),1)))
+                
 
 
     # Store gen 1 cell outputs and store as a dictionary
@@ -662,7 +781,13 @@ while cellpop_gn0 > 0:
         
         sp0 = ic_gn0[cell_n-1]
 
-        kwargs_gn = copy.deepcopy(kwargs_default)
+        # kwargs_gn = copy.deepcopy(kwargs_default)
+        
+        kwargs_gn = {}
+        
+        for kwargs_idx, kwargs_val in enumerate(list(kwargs_default.values())):
+            kwargs_gn[list(kwargs_default.keys())[kwargs_idx]] = kwargs_val
+        
         kwargs_gn['th'] = th_gc
         kwargs_gn['spdata'] = sp0
         
@@ -676,7 +801,7 @@ while cellpop_gn0 > 0:
         
         # xoutS_all, tout_all = RunModel(th_gc,sp0,params)
         
-        tout_all = RunModel_outputs['tout'] + (th-th_gc)*60
+        tout_all = RunModel_outputs['tout'] + (th-th_gc)*time_converter
         RunModel_outputs['tout'] = tout_all
         # Downsample single cell outputs to every 20th timepoint      
         # xoutS_lite = np.array(list(itertools.islice(xoutS_all,0,(len(xoutS_all)-1),20)))
@@ -696,8 +821,8 @@ while cellpop_gn0 > 0:
         
         
         # Find division events in gen n
-        
-        cb_peaks, _ = find_peaks(RunModel_outputs['xoutS'][:, list(species_all).index(cc_marker)],height=0.18)
+        mb_peak = float(sim_config["mb_peak"])
+        cb_peaks, _ = find_peaks(RunModel_outputs['xoutS'][:, list(species_all).index(cc_marker)],height=mb_peak)
     
         gn1_start = {}        
         
@@ -716,31 +841,80 @@ while cellpop_gn0 > 0:
                 
                 # if parp_dp > cparp_dp:
                     
-                
-                tdp_gn_cell = RunModel_outputs['tout'][dp]/60
-                
-                sp_gn_cell = RunModel_outputs['xoutS'][dp]
-                
-                lin_gn_cell = str(lin_gn0[cell_n-1])+'c'+str(cell_n)
-                # Assign the new cell lineage dictionary entry for gen (n+1)                    
-                gn1_start['cell'] = int(cell_n)
-                gn1_start['dp'] = dp
-                gn1_start['th_gn'] = th- tdp_gn_cell    
-                gn1_start['lin'] = lin_gn_cell
-                gn1_start['ic'] = sp_gn_cell                             
-
-                # Downsample gen n outputs to every 20th timepoint    
-                # xoutS_lite = np.array(list(itertools.islice(xoutS_all,0,(dp+1),20)))
-
-                # tout_lite = np.array(list(itertools.islice(tout_all,0,(dp+1),20)))
-                
-                # temp - turn off downsampling
-                RunModel_outputs_lite = {}
-                
-                for output_idx,output_key in enumerate(model_outputs):
-                    RunModel_outputs_lite[output_key] = np.array(list(itertools.islice(RunModel_outputs[output_key],0,(dp+1),1)))
+                if 'apoptosis' in sim_config.keys():
+                    apop_formula = str(sim_config['apoptosis']['formula'])
+                    apop_threshold = float(sim_config['apoptosis']['threshold'])
                     
+                    # evaluate_formula(RunModel_outputs['xoutS'][dp_actual,:],species_all,apop_formula,locals())
+                    
+                    sp_formula = re.findall(r'[a-zA-Z]\w*',apop_formula)
+                    sp_formula = list(np.unique(sp_formula))
+                    
+                    if 'e' in sp_formula:
+                        sp_formula.remove('e')                
+                    
+                    values = RunModel_outputs['xoutS'][dp,:]
+                    labels = species_all
+                    for i in range(len(sp_formula)):
+                        exec(f"{sp_formula[i]} = values[labels.index('{sp_formula[i]}')]")
+                        
+                    exec(f"flagA = {apop_formula}")                         
+                    
+                    
+                    if flagA < apop_threshold:
+                        
+                        tdp_gn_cell = RunModel_outputs['tout'][dp]/time_converter
+                        
+                        sp_gn_cell = RunModel_outputs['xoutS'][dp]
+                        
+                        lin_gn_cell = str(lin_gn0[cell_n-1])+'c'+str(cell_n)
+                        # Assign the new cell lineage dictionary entry for gen (n+1)                    
+                        gn1_start['cell'] = int(cell_n)
+                        gn1_start['dp'] = dp
+                        gn1_start['th_gn'] = th- tdp_gn_cell    
+                        gn1_start['lin'] = lin_gn_cell
+                        gn1_start['ic'] = sp_gn_cell                             
+        
+                        # Downsample gen n outputs to every 20th timepoint    
+                        # xoutS_lite = np.array(list(itertools.islice(xoutS_all,0,(dp+1),20)))
+        
+                        # tout_lite = np.array(list(itertools.islice(tout_all,0,(dp+1),20)))
+                        
+                        # temp - turn off downsampling
+                        RunModel_outputs_lite = {}
+                        
+                        for output_idx,output_key in enumerate(model_outputs):
+                            RunModel_outputs_lite[output_key] = np.array(list(itertools.islice(RunModel_outputs[output_key],0,(dp+1),1)))
+                            
+                                    
                 
+                
+                else:
+                
+                    tdp_gn_cell = RunModel_outputs['tout'][dp]/time_converter
+                    
+                    sp_gn_cell = RunModel_outputs['xoutS'][dp]
+                    
+                    lin_gn_cell = str(lin_gn0[cell_n-1])+'c'+str(cell_n)
+                    # Assign the new cell lineage dictionary entry for gen (n+1)                    
+                    gn1_start['cell'] = int(cell_n)
+                    gn1_start['dp'] = dp
+                    gn1_start['th_gn'] = th- tdp_gn_cell    
+                    gn1_start['lin'] = lin_gn_cell
+                    gn1_start['ic'] = sp_gn_cell                             
+    
+                    # Downsample gen n outputs to every 20th timepoint    
+                    # xoutS_lite = np.array(list(itertools.islice(xoutS_all,0,(dp+1),20)))
+    
+                    # tout_lite = np.array(list(itertools.islice(tout_all,0,(dp+1),20)))
+                    
+                    # temp - turn off downsampling
+                    RunModel_outputs_lite = {}
+                    
+                    for output_idx,output_key in enumerate(model_outputs):
+                        RunModel_outputs_lite[output_key] = np.array(list(itertools.islice(RunModel_outputs[output_key],0,(dp+1),1)))
+                        
+                    
                 
                 # xoutS_lite = np.array(list(itertools.islice(RunModel_outputs['xoutS'],0,(dp+1),1)))
 

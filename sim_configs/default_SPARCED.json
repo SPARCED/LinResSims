@@ -1,0 +1,32 @@
+{
+  "sim_name": "test_sparced",
+  "time_unit": "second",
+  "exp_time": 48,
+  "preinc_time": 48,
+  "gen0_time": 48,
+  "cc_marker": "Mb",
+  "cellpop": 5,
+  "td": 48,
+  "mb_tr": 2.0,
+  "mb_peak": 30,
+  "tneg_hours": 16,
+  "timespan_over": 3,
+  "model_module":{
+      "load_model": "LoadSPARCED",
+      "run_model": "RunSPARCED",
+      "output": ["xoutS","xoutG","tout"]
+  },
+  "stim": {
+      "egf": 3.308,
+      "ins": 1721.76,
+      "hgf": 0.0,
+      "nrg": 0.0,
+      "pdgf": 0.0,
+      "igf": 0.0,
+      "fgf": 0.0
+  },
+  "apoptosis": {
+      "formula": "cPARP/PARP",
+      "threshold": "1.0"
+  }
+}
