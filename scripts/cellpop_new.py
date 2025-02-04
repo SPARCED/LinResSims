@@ -35,9 +35,9 @@ parser.add_argument('--td',metavar='td', help='cell line doubling time (hrs) ', 
 parser.add_argument('--sim_name', metavar='sim_name', help='insert exp name', default = 'testmpi_tasks')
 # parser.add_argument('--mb_tr',metavar='mb_tr',help='Mb trough upper limit (nM)', default = 0.05)
 parser.add_argument('--exp_time', metavar='exp_time', help='Enter experiment time in hours', default = 6)
-parser.add_argument('--drug', metavar='drug', help='input drug species name', default = 'trame_EC')
-parser.add_argument('--rep', metavar='rep', help='specify replicate identifier', default = 'rep1')
-parser.add_argument('--dose', metavar='dose', help='input drug dose uM', default = 0.0)
+# parser.add_argument('--drug', metavar='drug', help='input drug species name', default = 'trame_EC')
+# parser.add_argument('--rep', metavar='rep', help='specify replicate identifier', default = 'rep1')
+# parser.add_argument('--dose', metavar='dose', help='input drug dose uM', default = 0.0)
 parser.add_argument('--egf', metavar='egf', help='input E conc in nM', default = 100.0)
 # parser.add_argument('--ins', metavar='ins', help='input INS conc in nM', default = 1721.76)
 # parser.add_argument('--hgf', metavar='hgf', help='input HGF conc in nM', default = 0.0)
@@ -88,8 +88,29 @@ if rank==0:
     if not os.path.exists(output_path):
         os.mkdir(output_path)
 
+if "drs" in sim_config.keys():
+    drug = str(sim_config["drs"]["drug"])
+    dose = float(sim_config["drs"]["dose_um"])
+    rep = str(sim_config["drs"]["rep"])
+    if sim_config["drs"]["output_partition"] == True:
+        output_rep = os.path.join(output_path,'drs_'+drug+'_'+str(rep))
 
-output_dir = output_path
+        if rank==0:
+            if not os.path.exists(output_rep):
+                os.mkdir(output_rep)
+        
+        output_dose = os.path.join(output_rep,drug+'_'+str(float(dose)))
+        
+        if rank==0:
+            if not os.path.exists(output_dose):
+                os.mkdir(output_dose)
+
+if "drs" in sim_config.keys():
+    if sim_config["drs"]["output_partition"] == True:
+        
+        output_dir = output_dose
+else:
+    output_dir = output_path
 
 
 
@@ -119,7 +140,6 @@ model_outputs = sim_config["model_module"]["output"]
 
 #%%
 from modules.sim_utils import assign_tasks
-from modules.sim_utils import evaluate_formula
 
 
 
@@ -458,6 +478,13 @@ for task in range(g1_cell_start, g1_cell_end):
     sp_input[np.argwhere(sp_input <= 1e-6)] = 0.0
     
     # kwargs_g1 = copy.deepcopy(kwargs_default)
+    
+    if "drs" in sim_config.keys():
+        drug = str(sim_config["drs"]["drug"])
+        dose_nm = float(sim_config["drs"]["dose_um"])*10e2
+        sp_input[species_all.index(drug)] = dose_nm
+
+    
     
     kwargs_g1 = {}
     for kwargs_idx, kwargs_val in enumerate(list(kwargs_default.values())):
