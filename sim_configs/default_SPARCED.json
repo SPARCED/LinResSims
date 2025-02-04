@@ -11,6 +11,7 @@
   "mb_peak": 30,
   "tneg_hours": 16,
   "timespan_over": 3,
+  "downsample_rate": 20,
   "model_module":{
       "load_model": "LoadSPARCED",
       "run_model": "RunSPARCED",

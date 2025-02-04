@@ -11,6 +11,7 @@
   "mb_peak": 0.18,
   "tneg_hours": 2,
   "timespan_over": 0.5,
+  "downsample_rate": 1,
   "model_module":{
       "load_model": "LoadTyson",
       "run_model": "RunTyson",

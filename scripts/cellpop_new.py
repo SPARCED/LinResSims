@@ -444,6 +444,7 @@ def find_dp_all(data,species_all=species_all):
 
 #%%
 time_over = sim_config["timespan_over"]
+downsample_rate = int(sim_config["downsample_rate"])
 
 th = exp_time + time_over
 
@@ -549,7 +550,7 @@ for task in range(g1_cell_start, g1_cell_end):
     RunModel_outputs_lite = {}
     
     for output_idx,output_key in enumerate(model_outputs):
-        RunModel_outputs_lite[output_key] = np.array(list(itertools.islice(RunModel_outputs[output_key],0,(len(RunModel_outputs[output_key])-1),1)))
+        RunModel_outputs_lite[output_key] = np.array(list(itertools.islice(RunModel_outputs[output_key],0,(len(RunModel_outputs[output_key])-1),downsample_rate)))
     
     
     
@@ -612,7 +613,7 @@ for task in range(g1_cell_start, g1_cell_end):
                     RunModel_outputs_lite = {}
     
                     for output_idx,output_key in enumerate(model_outputs):
-                        RunModel_outputs_lite[output_key] = np.array(list(itertools.islice(RunModel_outputs[output_key],0,(len(RunModel_outputs[output_key])-1),1)))
+                        RunModel_outputs_lite[output_key] = np.array(list(itertools.islice(RunModel_outputs[output_key],0,(len(RunModel_outputs[output_key])-1),downsample_rate)))
                     
                     
             
@@ -653,7 +654,7 @@ for task in range(g1_cell_start, g1_cell_end):
                 RunModel_outputs_lite = {}
         
                 for output_idx,output_key in enumerate(model_outputs):
-                    RunModel_outputs_lite[output_key] = np.array(list(itertools.islice(RunModel_outputs[output_key],0,(len(RunModel_outputs[output_key])-1),1)))
+                    RunModel_outputs_lite[output_key] = np.array(list(itertools.islice(RunModel_outputs[output_key],0,(len(RunModel_outputs[output_key])-1),downsample_rate)))
                 
 
 
@@ -884,7 +885,7 @@ while cellpop_gn0 > 0:
                         RunModel_outputs_lite = {}
                         
                         for output_idx,output_key in enumerate(model_outputs):
-                            RunModel_outputs_lite[output_key] = np.array(list(itertools.islice(RunModel_outputs[output_key],0,(dp+1),1)))
+                            RunModel_outputs_lite[output_key] = np.array(list(itertools.islice(RunModel_outputs[output_key],0,(dp+1),downsample_rate)))
                             
                                     
                 
@@ -912,7 +913,7 @@ while cellpop_gn0 > 0:
                     RunModel_outputs_lite = {}
                     
                     for output_idx,output_key in enumerate(model_outputs):
-                        RunModel_outputs_lite[output_key] = np.array(list(itertools.islice(RunModel_outputs[output_key],0,(dp+1),1)))
+                        RunModel_outputs_lite[output_key] = np.array(list(itertools.islice(RunModel_outputs[output_key],0,(dp+1),downsample_rate)))
                         
                     
                 
