@@ -33,14 +33,12 @@ def args_override(config,args): # override sim_config options with commandline a
                 # # Handle boolean conversion for enable_logging if necessary
                 # config[key] = value.lower() == "true" if key == "enable_logging" else value
                 config_new[key] = value
-            elif key in config.get("stim", {}):  # Nested keys in 'parameters'
+            elif key in config.get("stim", {}):  # Nested keys in 'stim'
                 config["stim"][key] = value
+            elif key in config.get("drs", {}):
+                config["drs"][key] = value
     
     
-    # if args.cellpop is not None:
-    #     config_new['cellpop'] = int(args.cellpop)
-    # if args.exp_time is not None:
-    #     config_new['exp_time'] = float(args.exp_time)
 
     return config_new
 
