@@ -1,0 +1,105 @@
+Bootstrap: docker
+From: ubuntu:22.04
+
+%files
+    ### Change to user directory version of LinResSim
+    /path/to/LinResSim /LinResSim
+
+%post
+ 
+    # Set shell and environment
+    export DEBIAN_FRONTEND=noninteractive
+    export SHELL=/bin/bash
+
+    # Export variables for the build process
+    export BLAS_LIBS=-lopenblas
+    export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
+
+    # Update and install basic dependencies
+    apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
+        libssl-dev \
+        libmunge-dev \
+        libmunge2 \
+        munge \
+        bash \
+        wget \
+        python3-pip \
+        python3-venv \
+        python3-dev \
+        libopenblas-dev \
+        gcc \
+        g++ \
+        git \
+        gfortran \
+        cmake \
+        make \
+        file \
+        libgfortran5 \
+        libatomic1 \
+        swig \
+        libhdf5-dev \
+        libsbml-dev \
+        && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+    # Installing packages for OpenMPI
+    echo "Installing Open MPI"
+    export OMPI_DIR=/opt/ompi
+    ### Inspect host MPI version and change line 52
+    export OMPI_VERSION=5.0.1
+    # Using string manipulation
+    export VAR_VERSION="${OMPI_VERSION%.*}"  # Remove everything after the last dot
+
+    export OMPI_URL="https://download.open-mpi.org/release/open-mpi/v$VAR_VERSION/openmpi-$OMPI_VERSION.tar.bz2"
+    mkdir -p /tmp/ompi
+    mkdir -p /opt
+    # Download
+    cd /tmp/ompi && wget -O openmpi-$OMPI_VERSION.tar.bz2 $OMPI_URL && tar -xjf openmpi-$OMPI_VERSION.tar.bz2
+    # Compile and install
+    cd /tmp/ompi/openmpi-$OMPI_VERSION && ./configure --prefix=$OMPI_DIR && make install
+    # Set env variables so we can compile our application
+    export PATH=$OMPI_DIR/bin:$PATH
+    export LD_LIBRARY_PATH=$OMPI_DIR/lib:$LD_LIBRARY_PATH
+    export MANPATH=$OMPI_DIR/share/man:$MANPATH
+
+    # Change permissions for /LinResSim
+    chmod -R 777 /LinResSim
+    chown -R root:root /LinResSim
+
+    # Navigate to the LinResSim path
+    cd /LinResSim
+
+    # Ubuntu 22.04 doesn't symlink python to python3 by default:
+    ln -s /usr/bin/python3 /usr/bin/python
+
+    # Set pip install locations to path
+    pip install --upgrade
+    pip install dist/linressim-1.0-py3-none-any.whl --verbose --no-cache-dir
+
+%environment
+    # Set up runtime environment variables
+    export PMIX_MCA_psec=^munge
+    export PATH=/root/.local/bin:$PATH
+    export BLAS_LIBS=-lopenblas
+    export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
+
+    # Setup varaibles for OpenMPI support within the container
+    export OMPI_DIR=/opt/ompi
+    export SINGULARITY_OMPI_DIR=$OMPI_DIR
+    export SINGULARITYENV_APPEND_PATH=$OMPI_DIR/bin
+    export SINGULAIRTYENV_APPEND_LD_LIBRARY_PATH=$OMPI_DIR/lib
+
+    # Ensures the container is bound to the local instance of LinResSim for cross operation.
+    export SINGULARITY_BINDPATH="./LinResSim:/LinResSim:rw"
+
+%runscript
+    # Default command for the container
+    exec LinResSim "$@"
+
+%startscript
+    exec "$@"
+
+%help
+    This container enables cross-platform installation of LinResSim tools.
+    Concerns and questions should be posted directly on our project
+    Repository page at https://github.com/SPARCED/LinResSim/issues

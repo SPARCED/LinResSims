@@ -1,0 +1,8 @@
+LICENSE
+README.md
+pyproject.toml
+LinResSim.egg-info/PKG-INFO
+LinResSim.egg-info/SOURCES.txt
+LinResSim.egg-info/dependency_links.txt
+LinResSim.egg-info/requires.txt
+LinResSim.egg-info/top_level.txt
