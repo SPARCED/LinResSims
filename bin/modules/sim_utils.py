@@ -9,6 +9,19 @@ import re
 
 
 def assign_tasks(rank,n_cells,size):
+
+    """
+    Assigns single cell simulation tasks to mpi ranks
+
+    Args:
+        rank: index of the current mpi rank
+        n_cells: number of cells in a given generation
+        size: number of available CPU cores
+
+    Returns:
+        start_cell: index of the first cell to be simulated by current rank
+        start_cell+my_cells: index of the last cell to be simulated by current rank
+    """
     
     cells_per_rank = n_cells // int(size)
     remainder = n_cells % int(size)
@@ -24,6 +37,17 @@ def assign_tasks(rank,n_cells,size):
 
 
 def args_override(config,args): # override sim_config options with commandline arguments
+    """
+    Allows the use of commandline arguments to override values in sim config file
+    Args:
+        config: sim_config dict
+        args: dictionary of command line arguments
+
+    Returns:
+        config_new: updated sim_config dict
+
+    """
+
     config_new = config
     
     args_dict = vars(args)  # Convert argparse Namespace to dictionary
