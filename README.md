@@ -14,9 +14,9 @@ For most users, we highly recommend using one of the provided container options.
 
 ### Docker Installation
 
-For users with administrator access, (i.e. Linux, MacOS and Windows), we strongly recommend installing the Docker container. [Docker (the software) can be installed here](*[Docker](https://docs.docker.com/get-started/get-docker/)).
+For users with administrator access, (i.e. Linux, MacOS and Windows), we strongly recommend pulling an image of the Docker container ([install Docker here](*[Docker](https://docs.docker.com/get-started/get-docker/))).
 
-Preferred installation: Download from [DockerHub](https://hub.docker.com/). This is a prebuilt container that has been extensively verified.
+**Preferred installation:**
 
 ```
 docker pull birtwistlelab/linressims:latest
@@ -37,7 +37,7 @@ docker run -it birtwistlelab/linressims:latest
 Further, users are able to bind their local LinResSims directory with the container's LinResSims directory, allowing for native, local modifications on the host system:
 
 ```
-docker run -it --rm -v <\path\to\>LinResSims:/LinResSims birtwistlelab/linressims:latest
+docker run -it --rm -v </path/to>/LinResSims:/LinResSims birtwistlelab/linressims:latest
 ```
 
 **Flags:**
@@ -52,20 +52,11 @@ Congratulations! You now have a full setup of LinResSims! 🦠
 
 ### Singularity Installation
 
-[Singularity](https://docs.sylabs.io/guides/3.0/user-guide/installation.html) is a containerization platform designed specifically for high-performance computing (HPC) and research environments. It allows users to create, distribute, and execute portable, reproducible containers across different systems. Unlike Docker, Singularity focuses on usability in environments where users don't have root access, such as shared HPC clusters.
-
-**Key Features:**
-
-1. **Rootless Execution:** Users don't need root privileges to run containers, enhancing security.
-2. **File System Binding:** Provides seamless integration with the host system by binding directories into the container.
-3. **Portability:** Containers can be moved and executed across different platforms without modification.
-4. **Support for MPI:** Well-suited for parallel computing environments, allowing easy integration with MPI libraries.
-
----
+[Singularity](https://docs.sylabs.io/guides/3.0/user-guide/installation.html) is a containerization platform designed specifically for high-performance computing (HPC) and research environments. It allows users to create, distribute, and execute portable, reproducible containers across different systems. Unlike Docker, Singularity focuses on usability in environments where users don't have root access, such as shared HPC clusters. 
 
 #### Building the Singularity Container from a Definition File
 
-To build a container using the `sparced.def` file, make the following alterations to the `container/linressims.def file`:
+To build a container using the `sparced.def` file, make the following alterations to the `container/linressims.def` file:
 
 1. On line 6, specify the absolute path of the host system to the LinResSims directory (e.g. ****`/home/username/LinResSims`****)
 2. On line 49, specify the version of OpenMPI running on the host system.
@@ -89,9 +80,7 @@ singularity inspect container/linressims.sif
 
 Congratulations! You now have a full setup of LinResSims! 🦠
 
----
-
-#### How to Shell into and Interact with the Singularity Container While Binding the Host  LinResSims Directory
+#### Working Within the Singularity Container
 
 1. **Bind the Host Directory:**
    Use the `--bind` option to link a host directory into the container.
