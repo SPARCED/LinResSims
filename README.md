@@ -42,36 +42,11 @@ docker run -it --rm -v <\path\to\>LinResSims:/LinResSims birtwistlelab/linressim
 
 **Flags:**
 
-**`--rm`**
-
-* **Stands for:** *Remove*
-* **Function:** Automatically removes the container when it stops
-* **Why use it**
-  * Prevents the accumulation of stopped containers that would otherwise take up system resources.
-  * Useful for temporary containers where you don't need to persist the container itself after it has run.
-
-**`-i`**
-
-* **Stands for:** *Interactive*
-* **Function:** Keeps the standard input (`stdin`) open, even if not attached to a terminal.
-* **Why use it?**
-  * Allows the container to accept input from the user during runtime.
-  * Especially useful when paired with `-t` for running an interactive shell session.
-
-**`-t`**
-
-* **Stands for:** *TTY (teletypewriter)*
-* **Function:** Allocates a pseudo-terminal for the container.
-* **Why use it?**
-  * Allows for better interactivity, like being able to run `bash` or `sh` inside the container and see a command prompt.
-  * Often paired with `-i` for fully interactive sessions.
-
-**`-v`**
-
-* **stands for:** Volume
-* **Function:** Binds a directory to the container volume. In simpler terms, it allows users to link a local directory to a container directory, enabling files to be shared between.
-* **Why use it?**
-  * Allows for seamless operation of the SPARCED tools on a users personal device with full file sharing as if the tool was installed locally.
+* **`--rm`** (*Remove*): Automatically removes the container when it stops to prevent the accumulation of stopped containers that would otherwise take up system resources.
+* **`-i`** (*Interactive*): Keeps the standard input (`stdin`) open, even if not attached to a terminal. Allows the container to accept input from the user during runtime.
+* * Especially useful when paired with `-t` for running an interactive shell session.
+* **`-t`** (*TTY, teletypewriter*): Allocates a pseudo-terminal for the container. Allows for better interactivity, like being able to run `bash` or `sh` inside the container and see a command prompt. Often paired with `-i` for fully interactive sessions.
+* **`-v`** (*Volume*): Binds a directory to the container volume. In simpler terms, it allows users to link a local directory to a container directory, enabling files to be shared between. Allows for seamless operation of LinResSims on a users personal device with full file sharing as if the tool was installed locally.
 
 Congratulations! You now have a full setup of LinResSims! 🦠
 
