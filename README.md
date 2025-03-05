@@ -72,6 +72,27 @@ Instructions for replicating results from the paper:
 10. Plots from figures 1,2 can be generated with jupyter notebooks included in the 'jupyter_notebooks' folder.
 
 
+Running cell population simulation with a new single cell model:
+
+By default, the cell population simulation workflow uses the SPARCED single cell model.
+It is capable of running simulations with a different single cell model given that 
+the model has a compatible structure. A compatible model must satisfy the following
+requirements:
+* The model must have a state matrix representing a single cell.
+* The model must have a variable representing dynamic molecular signature of cell cycle markers,
+i.e., periodic activation and inactivation of cyclins.
+* The model must be executable within a python module.
+
+To replace the SPARCED model in cell population simulations with another single cell model:
+
+1. Place all single cell simulation operations within a python function.
+2. Write another python function to generate an input dict for the single cell model function, mirroring the input/output structure of the LoadSPARCED function.
+3. Save both python functions as modules with the same name as the functions under bin/modules.
+4. Write a json config file with key-specific values appropriate for the new model structure. Be sure to make "load_model" and "run_model" options consistent with the new module names. For more details on the stucture of the sim config, see sim_configs/README.md
+
+The Novak-Tyson 1993 cell cycle model has been presented as an example for this procedure.
+The "load_model" and "run_model" modules have been provided as bin/modules/LoadTyson.py and bin/modules/RunTyson.py.
+The sim_config json file corresponding to this workflow is sim_config/default.json
 
 
 
