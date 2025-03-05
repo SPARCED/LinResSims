@@ -30,8 +30,34 @@ Default simulation configuration options:
 
 "downsample_rate": Integer value to specify downsampling ratio to save disk space, every n-th point is saved output files.
 
-"model_module": Nested dict to specify options for single cell model.
+"model_module": Dict to specify options ["load_model","run_model","output"] for single cell model.
 
-      "load_model": Name of the module that generates required inputs for single cell model. Module and function name must match and must be placed under bin/modules. 
-      "run_model": Name of the module that runs the single cell model. Module and functiona name must match and must be placed under bin/modules,
-      "output": Array specifying the names of output from "run_model" funciton. "xoutS" and "tout" are essentional, may contain additional elements based on model structure.
+{
+"load_model": Name of the module that generates required inputs for single cell model. Module and function name must match and must be placed under bin/modules. 
+
+"run_model": Name of the module that runs the single cell model. Module and functiona name must match and must be placed under bin/modules,
+
+"output": Array specifying the names of output from "run_model" funciton. "xoutS" and "tout" are essentional, may contain additional elements based on model structure.
+}
+
+"stim": Dict to specify growth factor ["egf,"ins","hgf","nrg","pdgf","igf","fgf" ] concentrations in nM.
+
+"apoptosis": Dict to specify options for apoptosis submodel (applicable to SPARCED)
+
+{
+      "formula": algebraic formula for apoptosis marker as string.
+      "threshold": minimum threshold value for apoptosis marker to define apoptosis event.
+}
+
+"drs": Dict to specify options for drug dose response simulations.
+
+{
+      "drug": Species name for the drug as string,
+      "dose_um": Float value to specify drug dose in uM,
+      "rep": String identifier for a replicate,
+      "output_partition": Boolean to specify whether outputs for each dose and replicate are saved in individual folder under "sim_name"
+}
+
+
+
+
