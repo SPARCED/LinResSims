@@ -30,7 +30,8 @@ Default simulation configuration options:
 
 "downsample_rate": Integer value to specify downsampling ratio to save disk space, every n-th point is saved output files.
 
-"model_module":{
-      "load_model": "LoadSPARCED",
-      "run_model": "RunSPARCED",
-      "output": ["xoutS","xoutG","tout"]
+"model_module": Nested dict to specify options for single cell model.
+
+      "load_model": Name of the module that generates required inputs for single cell model. Module and function name must match and must be placed under bin/modules. 
+      "run_model": Name of the module that runs the single cell model. Module and functiona name must match and must be placed under bin/modules,
+      "output": Array specifying the names of output from "run_model" funciton. "xoutS" and "tout" are essentional, may contain additional elements based on model structure.
