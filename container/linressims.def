@@ -3,7 +3,7 @@ From: ubuntu:22.04
 
 %files
     ### Change to user directory version of LinResSim
-    /path/to/LinResSim /LinResSim
+    /path/to/LinResSim /LinResSim ### Change This Line
 
 %post
  
@@ -45,8 +45,8 @@ From: ubuntu:22.04
     # Installing packages for OpenMPI
     echo "Installing Open MPI"
     export OMPI_DIR=/opt/ompi
-    ### Inspect host MPI version and change line 52
-    export OMPI_VERSION=5.0.1
+    ### Inspect host MPI version and change line 49
+    export OMPI_VERSION=5.0.1 ### Change This Line to Your Host System OpenMPI version
     # Using string manipulation
     export VAR_VERSION="${OMPI_VERSION%.*}"  # Remove everything after the last dot
 
@@ -73,7 +73,7 @@ From: ubuntu:22.04
     ln -s /usr/bin/python3 /usr/bin/python
 
     # Set pip install locations to path
-    pip install --upgrade
+    pip install --upgrade pip
     pip install dist/linressim-1.0-py3-none-any.whl --verbose --no-cache-dir
 
 %environment
