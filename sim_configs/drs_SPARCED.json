@@ -5,7 +5,7 @@
   "preinc_time": 48,
   "gen0_time": 48,
   "cc_marker": "Mb",
-  "cellpop": 5,
+  "cellpop": 100,
   "td": 48,
   "mb_tr": 2.0,
   "mb_peak": 30,
@@ -31,8 +31,8 @@
       "threshold": "1.0"
   },
   "drs":{
-      "drug": "palbo_EC",
-      "dose_um": 3.162278,
+      "drug": "alpel_EC",
+      "dose_um": 0.0,
       "rep": "rep1",
       "output_partition": true
   }

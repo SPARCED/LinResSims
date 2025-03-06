@@ -28,39 +28,19 @@ Alternatively, the Docker container can be built locally in the event changes ar
 docker buildx build -t birtwistlelab/linressims -f /path/to/LinResSims/container/Dockerfile .
 ```
 
-To run the LinResSims tool from within the container, execute the following:
-
-```
-docker run -it birtwistlelab/linressims:latest
-```
-
-Further, users are able to bind their local LinResSims directory with the container's LinResSims directory, allowing for native, local modifications on the host system:
-
-```
-docker run -it --rm -v </path/to>/LinResSims:/LinResSims birtwistlelab/linressims:latest
-```
-
-**Flags:**
-
-* **`--rm`** (*Remove*): Automatically removes the container when it stops to prevent the accumulation of stopped containers that would otherwise take up system resources.
-* **`-i`** (*Interactive*): Keeps the standard input (`stdin`) open, even if not attached to a terminal. Allows the container to accept input from the user during runtime.
-* * Especially useful when paired with `-t` for running an interactive shell session.
-* **`-t`** (*TTY, teletypewriter*): Allocates a pseudo-terminal for the container. Allows for better interactivity, like being able to run `bash` or `sh` inside the container and see a command prompt. Often paired with `-i` for fully interactive sessions.
-* **`-v`** (*Volume*): Binds a directory to the container volume. In simpler terms, it allows users to link a local directory to a container directory, enabling files to be shared between. Allows for seamless operation of LinResSims on a users personal device with full file sharing as if the tool was installed locally.
-
 Congratulations! You now have a full setup of LinResSims! 🦠
 
 ### Singularity Installation
 
-[Singularity](https://docs.sylabs.io/guides/3.0/user-guide/installation.html) is a containerization platform designed specifically for high-performance computing (HPC) and research environments. It allows users to create, distribute, and execute portable, reproducible containers across different systems. Unlike Docker, Singularity focuses on usability in environments where users don't have root access, such as shared HPC clusters. 
+[Singularity](https://docs.sylabs.io/guides/3.0/user-guide/installation.html) is a containerization platform designed specifically for high-performance computing (HPC) and research environments. It allows users to create, distribute, and execute portable, reproducible containers across different systems. Unlike Docker, Singularity focuses on usability in environments where users don't have root access, such as shared HPC clusters.
 
 #### Building the Singularity Container from a Definition File
 
-To build a container using the `sparced.def` file, make the following alterations to the `container/linressims.def` file:
+To build a container using the `linressims.def` file, make the following alterations to the `container/linressims.def` file:
 
 1. On line 6, specify the absolute path of the host system to the LinResSims directory (e.g. ****`/home/username/LinResSims`****)
 2. On line 49, specify the version of OpenMPI running on the host system.
-   1. Note, this build process has only been tested with OpenMPI. Using wget, the definition file pulls a **user-specified** version of OpenMPI and builds from source within the container following the [instructions specified here](https://apptainer.org/docs/user/1.0/mpi.html#open-mpi-hybrid-container). If the host system and container versions of MPI do not match, this code will not work as intended.
+   * Note, this build process has only been tested with OpenMPI. Using wget, the definition file pulls a **user-specified** version of OpenMPI and builds from source within the container following the [instructions specified here](https://apptainer.org/docs/user/1.0/mpi.html#open-mpi-hybrid-container). If the host system and container versions of MPI do not match, this code will not work as intended (e.g. `export OMPI_VERSION=5.0.1`)
 
 After the above alterations are made, execute the following command from the project root directory:
 
@@ -80,28 +60,6 @@ singularity inspect container/linressims.sif
 
 Congratulations! You now have a full setup of LinResSims! 🦠
 
-#### Working Within the Singularity Container
-
-1. **Bind the Host Directory:**
-   Use the `--bind` option to link a host directory into the container.
-2. **Run the Container:**
-   To open a shell inside the container with the `LinResSims` directory bound:
-
-   ```bash
-   singularity shell --bind /path/to/host/LinResSims:/LinResSims container/linressims.sif
-   ```
-
-   * **`/path/to/host/LinResSims`:** Replace this with the absolute path to your host's LinResSims directory.
-   * **`/LinResSims`:** This is the directory inside the container where the host directory will be accessible.
-3. **Operate Within the Container:**
-   Once inside the container, you'll see a prompt. Run commands as if you're working on a standalone system:
-
-   ```bash
-   python createModel.py
-   ```
-4. **Exit the Container:**
-   Type `exit` to leave the container.
-
 ### Ubuntu 22.04 (local) Installation
 
 For users with administrator (root) access who want to install project dependencies locally outside of a container, an installation script has been provided (`LinResSims/install.sh`) to simplify the dependency installations. To run, execute the following commands:
@@ -119,7 +77,7 @@ Congratulations! You now have a full setup of LinResSims! 🦠
 
 Operating the LinResSims code can be done either within a container, outside of a container, or at the command line locally. **Execution of the LinResSims code must be performed from within the `LinResSims/scripts/` directory.**
 
-### Code Execution Overview
+### Overview
 
 To run instances of the SPARCED model, model compilation must first be performed. This is not necessary for other models (e.g. the Tyson model):
 
@@ -129,7 +87,7 @@ python createModel.py
 
 * Verify model compilation via the production of the sbml file (SPARCED.xml) and AMICI-compiled model (SPARCED folder in the main directory).
 
-To operate, simply pass the following command, either within a container or at the command line:
+To run simulations, execute the following command:
 
 ```
 mpirun -n <CORES> python cellpop.py --sim_config <name_of_config_file>
@@ -141,11 +99,60 @@ mpirun -n <CORES> python cellpop.py --sim_config <name_of_config_file>
 
 `--sim_config`: Specifies which simulation configuration file should be used for simulation with the LinRessims code. More on this in the **Configuration File** subsection.
 
-### Container Execution
+### Interactive Execution
 
-Executing the LinResSims code from outside the container (which is necessary for most HPC job schedulers) is also possible.
+#### Docker
 
-#### Docker Execution
+To run the LinResSims tool from interactively within the Docker container, execute the following:
+
+```
+docker run -it birtwistlelab/linressims:latest
+```
+
+Users are further able to bind the local LinResSims directory with the container LinResSims directory, enabling native, local modifications on the host system:
+
+```
+docker run -it --rm -v </path/to>/LinResSims:/LinResSims birtwistlelab/linressims:latest
+```
+
+**Flags:**
+
+* **`--rm`** (*Remove*): Automatically removes the container when it stops to prevent the accumulation of stopped containers that would otherwise take up system resources.
+* **`-i`** (*Interactive*): Keeps the standard input (`stdin`) open, even if not attached to a terminal. Allows the container to accept input from the user during runtime.
+* * Especially useful when paired with `-t` for running an interactive shell session.
+* **`-t`** (*TTY, teletypewriter*): Allocates a pseudo-terminal for the container. Allows for better interactivity, like being able to run `bash` or `sh` inside the container and see a command prompt. Often paired with `-i` for fully interactive sessions.
+* **`-v`** (*Volume*): Binds a directory to the container volume. In simpler terms, it allows users to link a local directory to a container directory, enabling files to be shared between. Allows for seamless operation of LinResSims on a users personal device with full file sharing as if the tool was installed locally.
+
+#### Singularity
+
+To open a shell inside the container with the `LinResSims` directory bound:
+
+```bash
+singularity shell --bind /path/to/host/LinResSims:/LinResSims container/linressims.sif
+```
+
+* **`/path/to/host/LinResSims`:** Replace this with the absolute path to your host's LinResSims directory.
+* **`/LinResSims`:** This is the directory inside the container where the host directory will be accessible.
+
+**Flags:**
+
+* **`--bind`** : Option to link a host directory into the container
+
+Once inside the container, you'll see a prompt. By default the container launches in the LinResSims directory:
+
+```bash
+$ pwd
+/LinResSims # Output
+```
+
+**Exit the Container:**
+Type `exit` to leave the container.
+
+### Batch Execution
+
+Executing the LinResSims code as a batch script (which is necessary for most HPC job schedulers) is also possible.
+
+#### Docker
 
 To run the LinResSims code from outside of the Docker container, execute the following:
 
@@ -158,7 +165,7 @@ mpirun -n <CORES> python cellpop.py --sim_config <name_of_config_file>
 
 Here, a bash command is passed to the container to change the directory to scripts, then execute the code.
 
-#### Singularity Execution
+#### Singularity
 
 To run the LinResSims code from outside of the Singularity container, execute the following:
 
@@ -175,7 +182,7 @@ To demonstrate running the singularity container on an HPC system with SLURM job
 
 ### Additional Simulation Flags
 
-Simulation code accepts the following (optional) command line arguments:
+To override the configuration file without writing over existing simulation settings, use the following (optional) command line arguments:
 
 * `--sim_name`: An arbitrary string defined by the user to create a directory under sparced/output where simulation outputs will be saved.
 * `--cellpop`: An integer specifying the number of starting cells for simulation
@@ -195,11 +202,13 @@ Simulation code accepts the following (optional) command line arguments:
 
 To run the first replicate of cell population simulation with 0.003162 μM dose of trametinib for 72 hours, with 100 starting cells, using
 the name 'in_silico_drs' and 16 CPUs, the following command can be entered:
-mpirun -np 16 python cellpop_drs.py --sim_name in_silico_drs --cellpop 100 --exp_time 72 --drug trame_EC --dose 0.003162 --rep rep1
+
+```
+mpirun -n 16 python cellpop.py --sim_name in_silico_drs --cellpop 100 --exp_time 72 --drug trame_EC --dose 0.003162 --rep rep1
+```
+
 Upon completion of simulations, the results are saved to disk in a folder structure corresponding to drug name, replicate identifier and
-drug dose respectively. For a single simulation with a specific replicate of a drug dose, outputs (temporal species trajectories)
-from all cells in each generation are
-saved in a python pickle object.
+drug dose respectively (e.g. `LinResSims/output/in_silico_drs/drs_trame/drs_trame_rep1/trame_EC_0.003162/` ). For a single simulation with a specific replicate of a drug dose, outputs (temporal species trajectories) from all cells in each generation are saved in a python pickle object (e.g. `LinResSims/output/in_silico_drs/drs_trame/drs_trame_rep1/trame_EC_0.003162/output_g1.pkl`).
 
 * To generate all drug dose response simulation data, run cellpop_drs.py for:
 
@@ -223,7 +232,7 @@ saved in a python pickle object.
   'in_silico_drs_summary/mcf10a_drs_exp'
 * Plots from figures 1,2 can be generated with jupyter notebooks included in the 'jupyter_notebooks' folder.
 
-Running cell population simulation with a new single cell model:
+## Running cell population simulations with a new single cell model:
 
 By default, the cell population simulation workflow uses the SPARCED single cell model. It is capable of running simulations with a different single cell model given that the model has a compatible structure. A compatible model must satisfy the following requirements:
 
