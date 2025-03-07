@@ -79,7 +79,7 @@ Operating the LinResSims code can be done either within a container, outside of 
 
 ### Overview
 
-To run instances of the SPARCED model, model compilation must first be performed. This is not necessary for other models (e.g. the Tyson model):
+By default, each single cell in a population is simulated using the SPARCED model, which must be built and compiled at least once before it can be run in a python environment. This step may not be necessary if the single cell functionality is to be replaced with any other model (e.g. the Novak-Tyson cell cycle model), depending on the workflow of the corresponding model. To build the SPARCED model, the user must change directory to /scripts and run the following command:
 
 ```
 python createModel.py
