@@ -86,6 +86,7 @@ python createModel.py
 ```
 
 * Verify model compilation via the production of the sbml file (SPARCED.xml) and AMICI-compiled model (SPARCED folder in the main directory).
+* Workflow variables for cell population simulations are specified with the use of a json configuration file, which the user may define for each simulation run. This allows the alteration of several key workflow parameters without modification of the simulation script itself. By default simulation config files are located in the folder sim_configs/. For a detailed overview of the structure and keys of the configuration file, see sim_configs/README.md
 
 To run simulations, execute the following command:
 
@@ -97,7 +98,7 @@ mpirun -n <CORES> python cellpop.py --sim_config <name_of_config_file>
 
 `-n`: An MPI-specific flag for defining how many processor cores are utilized by a particular instance of code. Default value is 1 core.
 
-`--sim_config`: Specifies which simulation configuration file should be used for simulation with the LinRessims code. More on this in the **Configuration File** subsection.
+`--sim_config`: Specifies the name of the simulation configuration file should be used for simulation with the LinRessims code.
 
 ### Interactive Execution
 
