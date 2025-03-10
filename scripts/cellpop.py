@@ -30,7 +30,7 @@ size = comm.Get_size()
 
 parser = argparse.ArgumentParser(description='')
 
-parser.add_argument('--cellpop', metavar='cellpop', help='starting cellpopulation', default = 1)
+parser.add_argument('--cellpop', metavar='cellpop', help='starting cell-population')
 parser.add_argument('--sim_name', metavar='sim_name', help='insert exp name')
 parser.add_argument('--exp_time', metavar='exp_time', help='Enter experiment time in hours')
 parser.add_argument('--egf', metavar='egf', help='input E conc in nM')
@@ -65,7 +65,8 @@ sim_config = args_override(sim_config,args)
 
 
 #%%
-cell_pop = int(sim_config['cellpop'])
+cell_pop = sim_config.get('cellpop', 1)
+
 exp_time = float(sim_config['exp_time'])
 
 
