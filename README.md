@@ -79,7 +79,7 @@ Operating the LinResSims code can be done either within a container, outside of 
 
 ### Overview
 
-By default, each single cell in a population is simulated using the SPARCED model, which must be built and compiled at least once before it can be run in a python environment. This step may not be necessary if the single cell functionality is to be replaced with any other model (e.g. the Novak-Tyson cell cycle model), depending on the workflow of the corresponding model. To build the SPARCED model, the user must change directory to /scripts and run the following command:
+By default, each single cell in a population is simulated using the SPARCED model, which must be built and compiled at least once before it can be run in a python environment. This step may not be necessary if the single cell functionality is to be replaced with any other model (e.g. the Tyson cell cycle model), depending on the workflow of the corresponding model. To build the SPARCED model, the user must change directory to /scripts and run the following command:
 
 ```
 python createModel.py
@@ -248,7 +248,7 @@ To replace the SPARCED model in cell population simulations with another single 
 3. Save both python functions as modules with the same name as the functions under bin/modules.
 4. Write a json config file with key-specific values appropriate for the new model structure. Be sure to make "load_model" and "run_model" options consistent with the new module names. For more details on the stucture of the sim config, see sim_configs/README.md
 
-The Novak-Tyson 1993 cell cycle model has been presented as an example for this procedure. The "load_model" and "run_model" modules have been provided as bin/modules/LoadTyson.py and bin/modules/RunTyson.py. The sim_config json file corresponding to this workflow is sim_config/default.json
+The Tyson 1991 cell cycle model has been presented as an example for this procedure. The "load_model" and "run_model" modules have been provided as bin/modules/LoadTyson.py and bin/modules/RunTyson.py. The sim_config json file corresponding to this workflow is sim_config/default.json
 
 ## Contributors Guide
 
