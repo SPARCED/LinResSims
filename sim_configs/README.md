@@ -23,7 +23,7 @@ Default simulation configuration options:
 "mb_tr": Float value to specify maximum possible value of the cell cycle marker trough in original unit.
 
 "mb_peak": Float value to specify minimum height of the cell cycle marker peak,
-  
+
 "tneg_hours": Float value to specify duration in hours from generation 0 appended to generation 1 for successfule detection of cell cycle marker peak,
 
 "timespan_over": Float value to specify duration in hours of additional simulation time to prevent loss of information during downsampling,
@@ -33,7 +33,7 @@ Default simulation configuration options:
 "model_module": Dict to specify options ["load_model","run_model","output"] for single cell model.
 
 {
-"load_model": Name of the module that generates required inputs for single cell model. Module and function name must match and must be placed under bin/modules. 
+"load_model": Name of the module that generates required inputs for single cell model. Module and function name must match and must be placed under bin/modules.
 
 "run_model": Name of the module that runs the single cell model. Module and functiona name must match and must be placed under bin/modules,
 
@@ -57,7 +57,3 @@ Default simulation configuration options:
       "rep": String identifier for a replicate,
       "output_partition": Boolean to specify whether outputs for each dose and replicate are saved in individual folder under "sim_name"
 }
-
-
-
-

@@ -1,5 +1,5 @@
 {
-  "sim_name": "drs_test_sparced",
+  "sim_name": "in_silico_drs",
   "time_unit": "second",
   "exp_time": 48,
   "preinc_time": 48,

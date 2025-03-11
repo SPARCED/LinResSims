@@ -85,8 +85,8 @@ By default, each single cell in a population is simulated using the SPARCED mode
 python createModel.py
 ```
 
+* Compilation takes several minutes to run and provides sparse output while executing.
 * Verify model compilation via the production of the sbml file (SPARCED.xml) and AMICI-compiled model (SPARCED folder in the main directory).
-* Workflow variables for cell population simulations are specified with the use of a json configuration file, which the user may define for each simulation run. This allows the alteration of several key workflow parameters without modification of the simulation script itself. By default simulation config files are located in the folder sim_configs/. For a detailed overview of the structure and keys of the configuration file, see sim_configs/README.md
 
 To run simulations, execute the following command:
 
@@ -199,39 +199,46 @@ To override the configuration file without writing over existing simulation sett
 * `--igf`: Serum IGF concentration in nM
 * `--fgf`: Serum FGF concentration in nM
 
+## Configuration Files
+
+Workflow variables for cell population simulations are specified with the use of a json configuration file, which the user may define for each simulation run. This allows the alteration of several key workflow parameters without modification of the simulation script itself. By default simulation config files are located in the folder `LinResSims/sim_configs/`. For a detailed overview of the structure and keys of the configuration file, see `LinResSims/sim_configs/README.md`
+
 ## Reproducing Published Examples
 
-To run the first replicate of cell population simulation with 0.003162 μM dose of trametinib for 72 hours, with 100 starting cells, using
-the name 'in_silico_drs' and 16 CPUs, the following command can be entered:
+To simplify reproduction of our results,  bash scripts ()executable on a SLURM job scheduler) have been provided at `LinResSims/slurm_files`. Please execute these scripts in the following order:
+
+1. `LinResSims/slurm_files/new-container.sh # Builds the singularity container on the local system.`
+2. `LinResSims/slurm_files/compile-container.sh #builds an AMICI model for SPARCED simulation`
+3. `LinResSims/slurm_files/run-container.sh # Executes a single simulation of the SPARCED model based on the default_SPARCED.json settings`  OR
+   `LinResSims/slurm_files/figure_2defg.sh # Runs the simulations necessary to reproduce Figures 2D-F.`
+
+As a demonstration,   an example command to run the first replicate of cell population simulation with 0.003162 μM dose of trametinib for 72 hours, with 100 starting cells, using
+the name 'in_silico_drs' and 16 CPUs is provided below:
 
 ```
 mpirun -n 16 python cellpop.py --sim_name in_silico_drs --cellpop 100 --exp_time 72 --drug trame_EC --dose 0.003162 --rep rep1
 ```
 
-Upon completion of simulations, the results are saved to disk in a folder structure corresponding to drug name, replicate identifier and
-drug dose respectively (e.g. `LinResSims/output/in_silico_drs/drs_trame/drs_trame_rep1/trame_EC_0.003162/` ). For a single simulation with a specific replicate of a drug dose, outputs (temporal species trajectories) from all cells in each generation are saved in a python pickle object (e.g. `LinResSims/output/in_silico_drs/drs_trame/drs_trame_rep1/trame_EC_0.003162/output_g1.pkl`).
+Upon completion of simulations, the results are saved to disk in a folder structure corresponding to drug name, replicate identifier and drug dose respectively (e.g. `LinResSims/output/in_silico_drs/drs_trame/drs_trame_rep1/trame_EC_0.003162/` ). For a single simulation with a specific replicate of a drug dose, outputs (temporal species trajectories) from all cells in each generation are saved in a python pickle object (e.g. `LinResSims/output/in_silico_drs/drs_trame/drs_trame_rep1/trame_EC_0.003162/output_g1.pkl`).
 
-* To generate all drug dose response simulation data, run cellpop_drs.py for:
+### Visualization
 
-  * 4 drugs (alpelisib, neratinib, trametinib, palbociclib)
-  * 10 dose levels (including control)
-  * 10 replicates of each dose
-* To generate cell population dynamics (number of alive cells over time) from dose response simulation outputs, run analysis_popdyn.py
-  For this, results from all drug dose response simulations in step 5 need to be placed in the "output" folder in the main directory.
-  Alternatively, outputs may be placed at a secondary locations and the path must be updated in line 68 of analysis_popdyn.py script.
-  Outputs for the cell population dynamics will be saved in the "in_silico_drs_summary" folder under the output directory.
-* To calculate GR score from the cell population dynamics, input files must be prepared for the gr-score calculation pipeline. For this, step 6
-  must be completed first. After this, run analysis_grscore.py to generate the gr-score input file, which will be saved as 'drs_grcalc.tsv'
-  in the "in_silico_drs_summary" folder.
-* Take the input file generated at step 7 and run the gr-score calculation pipeline. For this:
+To generate cell population dynamics (number of alive cells over time) from dose response simulation outputs, run analysis_popdyn.py. For this, results from all drug dose response simulations need to be placed in the "output" folder in the main directory. Alternatively, outputs may be placed at a secondary locations and the path must be updated in line 68 of analysis_popdyn.py script. Outputs for the cell population dynamics will be saved in the "in_silico_drs_summary" folder under the output directory.
 
-  * 8a. Clone the gr-score git repository: https://github.com/datarail/gr_metrics
-  * 8b. Install all dependencies including Python 2.0
-  * 8c. Go to gr_metrics/SRC/python/scripts
-  * 8d. Run python add_gr_column.py [input_path] > [output_path]
-* Download all experimental dose response datasets (GR-scores) from here: https://www.synapse.org/#!Synapse:syn18456348/ and place them in
-  'in_silico_drs_summary/mcf10a_drs_exp'
-* Plots from figures 1,2 can be generated with jupyter notebooks included in the 'jupyter_notebooks' folder.
+### Calculating GR Scores
+
+To calculate GR score from the cell population dynamics, input files must be prepared for the gr-score calculation pipeline. The below steps describe calculating GR scores from results:
+
+1. Ensure that script `figure_2defg.sh` as been executed
+2. Complete the **Visualization** instructions provided in the previous section.
+3. Run `analysis_grscore.py` to generate the gr-score input file, which will be saved as `drs_grcalc.tsv` in the `in_silico_drs_summary` folder.
+4. Take the input file generated at step 3 and run the gr-score calculation pipeline:
+   1. Clone the gr-score git repository:` https://github.com/datarail/gr_metrics`
+   2. Install all dependencies including Python 2.0
+   3. Go to `gr_metrics/SRC/python/scripts`
+   4. Run `python add_gr_column.py [input_path] > [output_path]`
+5. Download all experimental dose response datasets (GR-scores) from here: https://www.synapse.org/#!Synapse:syn18456348/ and place them in `in_silico_drs_summary/mcf10a_drs_exp`
+6. Plots from figures 1,2 can be generated with jupyter notebooks included in the `LinResSims/jupyter_notebooks` folder.
 
 ## Running cell population simulations with a new single cell model:
 
@@ -243,19 +250,19 @@ By default, the cell population simulation workflow uses the SPARCED single cell
 
 To replace the SPARCED model in cell population simulations with another single cell model:
 
-1. Place all single cell simulation operations within a python function.
-2. Write another python function to generate an input dict for the single cell model function, mirroring the input/output structure of the LoadSPARCED function.
-3. Save both python functions as modules with the same name as the functions under bin/modules.
-4. Write a json config file with key-specific values appropriate for the new model structure. Be sure to make "load_model" and "run_model" options consistent with the new module names. For more details on the stucture of the sim config, see sim_configs/README.md
+1. Place all single cell simulation operations within a python function (see `LinResSims/bin/modules/RunTyson.py` for an example).
+2. Write another python function to generate an input dict for the single cell model function, mirroring the input/output structure of the LoadSPARCED function (see `LinResSims/bin/modules/LoadTyson.py` for an example).
+3. Save both python functions as modules with the same name as the functions under `LinResSims/bin/modules`.
+4. Write a json config file with key-specific values appropriate for the new model structure. Be sure to make "load_model" and "run_model" options consistent with the new module names. For more details on the stucture of the sim config, see `sim_configs/README.md`
 
-The Tyson 1991 cell cycle model has been presented as an example for this procedure. The "load_model" and "run_model" modules have been provided as bin/modules/LoadTyson.py and bin/modules/RunTyson.py. The sim_config json file corresponding to this workflow is sim_config/default.json
+The Tyson 1991 cell cycle model has been presented as an example for this procedure. The "load_model" and "run_model" modules have been provided as `LinResSims/bin/modules/LoadTyson.py `and `LinResSims/bin/modules/RunTyson.py`. The sim_config json file corresponding to this workflow is` LinResSims/sim_config/default.json`
 
 ## Contributors Guide
 
 To enable broader portability of the LinResSims project, source code and dependencies are packaged into a distributable wheel using the `pyproject.toml` file and python's `build` command. Further, packages are installed at `/usr/local/lib/python3.10/site-packages/` via the `pip` package manager. In the event that you wish to contribute to update or change python packages, the distributable files (located at `LinResSims/dist/`) will need to be updated as well for the changes to take affect.
 
-1. First, update the `pyproject.toml` file with any modifications to the package lists under the `dependencies` variable (line 18)
+1. Update the `pyproject.toml` file with any modifications to the package lists under the `dependencies` variable (line 18)
 2. From the project root directory, execute the following command
    * `python -m build`
-3. Lastly, install the new packages using pip:
+3. Install the new packages using pip:
    * `pipinstalldist/linressim-1.0-py3-none-any.whl --verbose --force`
