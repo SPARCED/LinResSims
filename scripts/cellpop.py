@@ -84,7 +84,14 @@ if "drs" in sim_config.keys():
     dose = float(sim_config["drs"]["dose_um"])
     rep = str(sim_config["drs"]["rep"])
     if sim_config["drs"]["output_partition"] == True:
-        output_rep = os.path.join(output_path,'drs_'+drug+'_'+str(rep))
+        
+        output_drug = os.path.join(output_path,'drs_'+drug.replace('_EC',''))
+        
+        if rank==0:
+            if not os.path.exists(output_drug):
+                os.mkdir(output_drug)
+        
+        output_rep = os.path.join(output_drug,'drs_'+drug.replace('_EC','')+'_'+str(rep))
 
         if rank==0:
             if not os.path.exists(output_rep):
