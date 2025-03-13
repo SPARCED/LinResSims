@@ -79,14 +79,27 @@ Operating the LinResSims code can be done either within a container, outside of 
 
 ### Overview
 
-By default, each single cell in a population is simulated using the SPARCED model, which must be built and compiled at least once before it can be run in a python environment. This step may not be necessary if the single cell functionality is to be replaced with any other model (e.g. the Tyson cell cycle model), depending on the workflow of the corresponding model. To build the SPARCED model, the user must change directory to /scripts and run the following command:
+#### SPARCED Compilation
+
+By default, each single cell in a population is simulated using the SPARCED model. Our use of the ODE solver **[AMICI](https://amici.readthedocs.io/en/v0.11.12/)** necessitates the model be re-constructed in a C++ directory relative to the SBML path. Therefore, the model compilation step must be executed before it can be run in a python environment. 
+
+- Models not using the AMICI simulator are not subject to this constraint (see `bin/modules/RunTyson.py` for an example)
+
+ To compile the SPARCED model, the user must change directory to /scripts and run the following command:
 
 ```
 python createModel.py
 ```
 
 * Compilation takes several minutes to run and provides sparse output while executing.
-* Verify model compilation via the production of the sbml file (SPARCED.xml) and AMICI-compiled model (SPARCED folder in the main directory).
+* An SBML file (SPARCED.xml) and AMICI-compiled model (SPARCED folder in the main directory) serve as verification that this step was successful.
+
+⚠️SPARCED compilation is only necessary:
+
+* Before simulating LinResSims for the first time
+* When modifying the input files
+
+#### Code Execution
 
 To run simulations, execute the following command:
 
@@ -188,9 +201,7 @@ To override the configuration file without writing over existing simulation sett
 * `--sim_name`: An arbitrary string defined by the user to create a directory under sparced/output where simulation outputs will be saved.
 * `--cellpop`: An integer specifying the number of starting cells for simulation
 * `--exp_time`: Duration of experiment in hours
-* `--drug`: String specifying species name for the drug of interest (alpel_EC, nerat_EC, trame_EC, palbo_EC)
 * `--rep`: String identifier for the current replicate
-* `--dose`: Applied concentration of the drug in μM
 * `--egf`: Serum EGF concentration in nM
 * `--ins`: Serum INS concentration in nM
 * `--hgf`: Serum HGF concentration in nM
@@ -255,7 +266,7 @@ To replace the SPARCED model in cell population simulations with another single 
 3. Save both python functions as modules with the same name as the functions under `LinResSims/bin/modules`.
 4. Write a json config file with key-specific values appropriate for the new model structure. Be sure to make "load_model" and "run_model" options consistent with the new module names. For more details on the stucture of the sim config, see `sim_configs/README.md`
 
-The Tyson 1991 cell cycle model has been presented as an example for this procedure. The "load_model" and "run_model" modules have been provided as `LinResSims/bin/modules/LoadTyson.py `and `LinResSims/bin/modules/RunTyson.py`. The sim_config json file corresponding to this workflow is` LinResSims/sim_config/default.json`
+The Tyson 1991 cell cycle model has been presented as an example for this procedure. The "load_model" and "run_model" modules have been provided as `LinResSims/bin/modules/LoadTyson.py `and `LinResSims/bin/modules/RunTyson.py`. The sim_config json file corresponding to this workflow is ` LinResSims/sim_config/default.json`
 
 ## Contributors Guide
 
