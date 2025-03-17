@@ -75,13 +75,13 @@ Congratulations! You now have a full setup of LinResSims! 🦠
 
 ## Operation
 
-Operating the LinResSims code can be done either within a container, outside of a container, or at the command line locally. **Execution of the LinResSims code must be performed from within the `LinResSims/scripts/` directory.**
+Operating the LinResSims code can be done either within a container, outside of a container, or at the command line locally. **Execution of all LinResSims code must be performed from within the `LinResSims/scripts/` directory.**
 
 ### Overview
 
 #### SPARCED Compilation
 
-By default, each single cell in a population is simulated using the SPARCED model. Our use of the ODE solver **[AMICI](https://amici.readthedocs.io/en/v0.11.12/)** necessitates the model be re-constructed in a C++ directory relative to the SBML path. Therefore, the model compilation step must be executed before it can be run in a python environment. 
+By default, each single cell in a population is simulated using the SPARCED model. Our use of the ODE solver **[AMICI](https://amici.readthedocs.io/en/v0.11.12/)** necessitates the model be re-constructed in a C++ directory relative to the SBML path. Therefore, the model compilation step must be executed before it can be run in a python environment.
 
 - Models not using the AMICI simulator are not subject to this constraint (see `bin/modules/RunTyson.py` for an example)
 
@@ -234,21 +234,57 @@ Upon completion of simulations, the results are saved to disk in a folder struct
 
 ### Visualization
 
-To generate cell population dynamics (number of alive cells over time) from dose response simulation outputs, run analysis_popdyn.py. For this, results from all drug dose response simulations need to be placed in the "output" folder in the main directory. Alternatively, outputs may be placed at a secondary locations and the path must be updated in line 68 of analysis_popdyn.py script. Outputs for the cell population dynamics will be saved in the "in_silico_drs_summary" folder under the output directory.
+To generate cell population dynamics (number of alive cells over time) from dose response simulation outputs, run  `LinResSims/scripts/analysis_popdyn.py`:
+
+```
+python analysis_popdyn.py
+```
+
+* Note,  `LinResSims/slurm_files/figure_2defg.sh` should be ran prior to `analysis_popdyn.py`
+
+Outputs for the cell population dynamics will be saved in the "in_silico_drs_summary" folder under the output directory.
 
 ### Calculating GR Scores
 
 To calculate GR score from the cell population dynamics, input files must be prepared for the gr-score calculation pipeline. The below steps describe calculating GR scores from results:
 
-1. Ensure that script `figure_2defg.sh` as been executed
-2. Complete the **Visualization** instructions provided in the previous section.
-3. Run `analysis_grscore.py` to generate the gr-score input file, which will be saved as `drs_grcalc.tsv` in the `in_silico_drs_summary` folder.
-4. Take the input file generated at step 3 and run the gr-score calculation pipeline:
-   1. Clone the gr-score git repository:` https://github.com/datarail/gr_metrics`
-   2. Install all dependencies including Python 2.0
-   3. Go to `gr_metrics/SRC/python/scripts`
-   4. Run `python add_gr_column.py [input_path] > [output_path]`
-5. Download all experimental dose response datasets (GR-scores) from here: https://www.synapse.org/#!Synapse:syn18456348/ and place them in `in_silico_drs_summary/mcf10a_drs_exp`
+1. Complete the **Visualization** instructions provided in the previous section.
+2. Run `analysis_grscore.py` to generate the gr-score input file, which will be saved as `drs_grcalc3.tsv` in the `in_silico_drs_summary` folder.
+3. Take the input file generated at step 2 and run the gr-score calculation pipeline:
+
+   1. Clone the gr-score git repository:
+      * `git clone https://github.com/datarail/gr_metrics.git`
+   2. Install the anaconda environment provided in `LinResSims/setup/gr_metrics.yml`
+      * * `conda env create -f LinResSims/setup/gr_metrics.yml`
+   3. Change directories into the main gr_metrics python scripts folder:
+      * `cd gr_metrics/SRC/python/scripts`
+   4. Run `python add_gr_column.py [path/to/grs_grcalc3.tsv] > [path/to/LinResSims/jupyter_notebooks/]`
+4. Create a [synapse account](https://accounts.synapse.org/?appId=synapse.org) and a personal authentication token following the instructions [here](https://help.synapse.org/docs/Managing-Your-Account.2055405596.html#ManagingYourAccount-PersonalAccessTokens:~:text=Account%20Settings%20page.-,Logging%20in,-Personal%20Access%20Tokens).
+
+   1. We highly suggest saving this somewhere because each synapse get request will require said auth token.
+5. Download all experimental dose response datasets (GR-scores) from [here](https://www.synapse.org/#!Synapse:syn18456348/) and place them in `in_silico_drs_summary/mcf10a_drs_exp`.
+
+   ```
+   # From the LinResSims project root directory:
+   mkdir output/in_silico_drs_summary/mcf10a_drs_exp
+   cd output/in_silico_drs_summary/mcf10a_drs_exp
+
+   # this will prompt for your synapse.org username and the authentication token
+   synapse login -u <Synapse username> -p <API key>
+
+   # The following Will make sure you don't have to use the api-key for every download
+   synapse config
+
+   # Download each of the following, this will prompt for your synapse.org username and the authentication token.
+   synapse get syn18483759 
+   synapse get syn18483760 
+   synapse get syn18483761 
+   synapse get syn18483762 
+   synapse get syn18483763 
+   synapse get syn18483764 
+   synapse get syn18483765 
+   synapse get syn18483766
+   ```
 6. Plots from figures 1,2 can be generated with jupyter notebooks included in the `LinResSims/jupyter_notebooks` folder.
 
 ## Running cell population simulations with a new single cell model:

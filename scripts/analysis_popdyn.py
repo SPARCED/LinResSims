@@ -200,7 +200,8 @@ drugs_exp = ['Alpelisib','Neratinib','Trametinib','Palbociclib']
 
 drug_idx = 2
 
-drug = drugs_exp[drug_idx][:5].lower() + '_EC'
+drug = drugs_exp[drug_idx][:5].lower() 
+drug = drug + '_EC'
 
 for dl in range(10):
     
@@ -217,7 +218,8 @@ plt.ylim(0,550)
 plt.xlim(0,72)
 plt.xticks(fontsize=15)
 plt.yticks(fontsize=15)
-# plt.xlabel('Time (h)')
-# plt.ylabel('# of cells')
+plt.xlabel('Time (h)')
+plt.ylabel('# of cells')
 # plt.title(drugs_exp[2])
 plt.show()
+plt.savefig(f'{drug}-drs-plot.png', bbox_inches='tight', dpi=300)
