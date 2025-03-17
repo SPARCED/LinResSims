@@ -239,7 +239,7 @@ To replicate the figures from the paper that use simulation outputs, dose resopn
 * figure_1c.ipynb: cross generational protein level trajectories and single cell lineage tree
 * figure_2abc.ipynb: cell population dendrogram with control and dosage populations.
 
-Some population level visualizaitons rely on cell population dynamics and require further analysis after simulation. For example, cell population dynamics require alive cell counts over time to have been completed. 
+Some population level visualizations rely on cell population dynamics and require further analysis after simulation. For example, cell population dynamics require alive cell counts over time to have been completed. 
 
 To generate cell population dynamics (number of alive cells over time) from dose response simulation outputs, run analysis_popdyn.py. For this, results from all drug dose response simulations need to be placed in the "output" folder in the main directory. Alternatively, outputs may be placed at a secondary locations and the path must be updated in line 68 of analysis_popdyn.py script. Outputs for the cell population dynamics will be saved in the "in_silico_drs_summary" folder under the output directory.
 
