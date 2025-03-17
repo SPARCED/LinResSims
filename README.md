@@ -234,7 +234,7 @@ Upon completion of simulations, the results are saved to disk in a folder struct
 
 ### Visualization
 
-To replicate the figures from the paper that use simulation outputs, dose resopnse simulaitons for all 4 drugs, across 10 specified dose levels and 10 replicates must have been completed using a unique "sim_name" ("in_siloco_drs" by default) and placed at a convenient location (LinResSims/output by default). For making plots using simulation outputs from a given drug dose and replicate, we have provided a python class "drs_dict" defined within "bin/modules/drsPlotting.py". Example of its usage to generate several types of plots have been provided as jupyter notebooks under LinResSims/jupyter_notebooks.
+To replicate the figures from the paper that use simulation outputs, dose resopnse simulations for all 4 drugs, across 10 specified dose levels and 10 replicates must have been completed using a unique "sim_name" ("in_siloco_drs" by default) and placed at a convenient location (LinResSims/output by default). For making plots using simulation outputs from a given drug dose and replicate, we have provided a python class "drs_dict" defined within "bin/modules/drsPlotting.py". Example of its usage to generate several types of plots have been provided as jupyter notebooks under LinResSims/jupyter_notebooks.
 
 * figure_1c.ipynb: cross generational protein level trajectories and single cell lineage tree
 * figure_2abc.ipynb: cell population dendrogram with control and dosage populations.
