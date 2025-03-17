@@ -234,7 +234,16 @@ Upon completion of simulations, the results are saved to disk in a folder struct
 
 ### Visualization
 
+To replicate the figures from the paper that use simulation outputs, dose resopnse simulaitons for all 4 drugs, across 10 specified dose levels and 10 replicates must have been completed using a unique "sim_name" ("in_siloco_drs" by default) and placed at a convenient location (LinResSims/output by default). For making plots using simulation outputs from a given drug dose and replicate, we have provided a python class "drs_dict" defined within "bin/modules/drsPlotting.py". Example of its usage to generate several types of plots have been provided as jupyter notebooks under LinResSims/jupyter_notebooks.
+
+* figure_1c.ipynb: cross generational protein level trajectories and single cell lineage tree
+* figure_2abc.ipynb: cell population dendrogram with control and dosage populations.
+
+Some population level visualizaitons rely on cell population dynamics and require further analysis after simulation. For example, cell population dynamics require alive cell counts over time to have been completed. 
+
 To generate cell population dynamics (number of alive cells over time) from dose response simulation outputs, run analysis_popdyn.py. For this, results from all drug dose response simulations need to be placed in the "output" folder in the main directory. Alternatively, outputs may be placed at a secondary locations and the path must be updated in line 68 of analysis_popdyn.py script. Outputs for the cell population dynamics will be saved in the "in_silico_drs_summary" folder under the output directory.
+
+Furthermore, visualizing dose response for mutiple drugs, doses, and replicates in terms of GR-score, requires the calculation of GR score after the cell population dynamics have been computed. Further instructions have been provided in the following section. 
 
 ### Calculating GR Scores
 
