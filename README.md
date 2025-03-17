@@ -196,7 +196,7 @@ To demonstrate running the singularity container on an HPC system with SLURM job
 
 ### Additional Simulation Flags
 
-To override the configuration file without writing over existing simulation settings, use the following (optional) command line arguments:
+To override the configuration file without writing over existing simulation settings, cellpop.py accepts the following (optional) command line arguments:
 
 * `--sim_name`: An arbitrary string defined by the user to create a directory under sparced/output where simulation outputs will be saved.
 * `--cellpop`: An integer specifying the number of starting cells for simulation
