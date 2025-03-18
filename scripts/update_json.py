@@ -35,7 +35,7 @@ def change_drug_dose_settings(path, drug, dose):
 
     # Update values
     config["drs"]["drug"] = drug
-    config["drs"]["dose"] = dose
+    config["drs"]["dose_um"] = dose
 
     # Save updated JSON
     with open(path, encoding='utf-8', mode='w') as file:

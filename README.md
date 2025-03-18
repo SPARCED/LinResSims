@@ -79,14 +79,27 @@ Operating the LinResSims code can be done either within a container, outside of 
 
 ### Overview
 
-By default, each single cell in a population is simulated using the SPARCED model, which must be built and compiled at least once before it can be run in a python environment. This step may not be necessary if the single cell functionality is to be replaced with any other model (e.g. the Tyson cell cycle model), depending on the workflow of the corresponding model. To build the SPARCED model, the user must change directory to /scripts and run the following command:
+#### SPARCED Compilation
+
+By default, each single cell in a population is simulated using the SPARCED model. Our use of the ODE solver **[AMICI](https://amici.readthedocs.io/en/v0.11.12/)** necessitates the model be re-constructed in a C++ directory relative to the SBML path. Therefore, the model compilation step must be executed before it can be run in a python environment. 
+
+- Models not using the AMICI simulator are not subject to this constraint (see `bin/modules/RunTyson.py` for an example)
+
+ To compile the SPARCED model, the user must change directory to /scripts and run the following command:
 
 ```
 python createModel.py
 ```
 
 * Compilation takes several minutes to run and provides sparse output while executing.
-* Verify model compilation via the production of the sbml file (SPARCED.xml) and AMICI-compiled model (SPARCED folder in the main directory).
+* An SBML file (SPARCED.xml) and AMICI-compiled model (SPARCED folder in the main directory) serve as verification that this step was successful.
+
+⚠️SPARCED compilation is only necessary:
+
+* Before simulating LinResSims for the first time
+* When modifying the input files
+
+#### Code Execution
 
 To run simulations, execute the following command:
 
@@ -183,14 +196,12 @@ To demonstrate running the singularity container on an HPC system with SLURM job
 
 ### Additional Simulation Flags
 
-To override the configuration file without writing over existing simulation settings, use the following (optional) command line arguments:
+To override the configuration file without writing over existing simulation settings, cellpop.py accepts the following (optional) command line arguments:
 
 * `--sim_name`: An arbitrary string defined by the user to create a directory under sparced/output where simulation outputs will be saved.
 * `--cellpop`: An integer specifying the number of starting cells for simulation
 * `--exp_time`: Duration of experiment in hours
-* `--drug`: String specifying species name for the drug of interest (alpel_EC, nerat_EC, trame_EC, palbo_EC)
 * `--rep`: String identifier for the current replicate
-* `--dose`: Applied concentration of the drug in μM
 * `--egf`: Serum EGF concentration in nM
 * `--ins`: Serum INS concentration in nM
 * `--hgf`: Serum HGF concentration in nM
@@ -219,11 +230,38 @@ the name 'in_silico_drs' and 16 CPUs is provided below:
 mpirun -n 16 python cellpop.py --sim_name in_silico_drs --cellpop 100 --exp_time 72 --drug trame_EC --dose 0.003162 --rep rep1
 ```
 
-Upon completion of simulations, the results are saved to disk in a folder structure corresponding to drug name, replicate identifier and drug dose respectively (e.g. `LinResSims/output/in_silico_drs/drs_trame/drs_trame_rep1/trame_EC_0.003162/` ). For a single simulation with a specific replicate of a drug dose, outputs (temporal species trajectories) from all cells in each generation are saved in a python pickle object (e.g. `LinResSims/output/in_silico_drs/drs_trame/drs_trame_rep1/trame_EC_0.003162/output_g1.pkl`).
+Upon completion of simulations, the results are saved to disk in a folder structure corresponding to drug name, replicate identifier and drug dose respectively (e.g. `LinResSims/output/in_silico_drs/drs_trame/drs_trame_rep1/trame_EC_0.003162/` ). For a single simulation with a specific replicate of a drug dose, outputs (temporal species trajectories) from all cells in each generation are saved in a python pickle object (e.g. `LinResSims/output/in_silico_drs/drs_trame/drs_trame_rep1/trame_EC_0.003162/output_g1.pkl`). The number of these pickle files within a folder corresponds to the number of generations of cells that were dynamically created within that specific dose/replicate simulation. Each pickle file contains a generation specific python dictionary, of which the outermost layer contains a dictionary representing one cell in that generation, which is accessed by using an integer index of the cell as key ('1', '2', '3', .... 'n'). Each cell specific dictionary has the following structure of keys, values and elements:
+
+| Element | Type | Description |
+|----------|----------|----------|
+| cell_dict  | dict  | dictionary representing a single cell  |
+| cell_dict['output']   | dict  | dictionary containing output data from single cell  |
+| cell_dict['output']['cell']  | int  | index of the cell  |
+| cell_dict['output']['xoutS']  | 2d array  | state matrix of protein levels from single cell  |
+| cell_dict['output']['xoutG']  | 2d array  | state matrix of gene expression module species from single cell  |
+| cell_dict['output']['tout']  | 1d array  | time points from single cell simulations  |
+| cell_dict['gn1start']  | dict/empty list  | dictionary containing information about next generation, or empty list in absence of cell division  |
+| cell_dict['gn1start']['cell']  | int  | index of the cell  |
+| cell_dict['gn1start']['dp']  | int | index of the time point at cell division  |
+| cell_dict['gn1start']['th_gn']  | float  | required simulation time (hours) for next generation daughter cells  |
+| cell_dict['gn1start']['lin']  | str  | lineage information of previous generation of cells  |
+| cell_dict['gn1start']['ic']  | array  | initial conditions for next generation daughter cells  |
+
+
+
 
 ### Visualization
 
+To replicate the figures from the paper that use simulation outputs, dose resopnse simulations for all 4 drugs, across 10 specified dose levels and 10 replicates must have been completed using a unique "sim_name" ("in_siloco_drs" by default) and placed at a convenient location (LinResSims/output by default). For making plots using simulation outputs from a given drug dose and replicate, we have provided a python class "drs_dict" defined within "bin/modules/drsPlotting.py". Example of its usage to generate several types of plots have been provided as jupyter notebooks under LinResSims/jupyter_notebooks.
+
+* figure_1c.ipynb: cross generational protein level trajectories and single cell lineage tree
+* figure_2abc.ipynb: cell population dendrogram with control and dosage populations.
+
+Some population level visualizations rely on cell population dynamics and require further analysis after simulation. For example, cell population dynamics require alive cell counts over time to have been completed. 
+
 To generate cell population dynamics (number of alive cells over time) from dose response simulation outputs, run analysis_popdyn.py. For this, results from all drug dose response simulations need to be placed in the "output" folder in the main directory. Alternatively, outputs may be placed at a secondary locations and the path must be updated in line 68 of analysis_popdyn.py script. Outputs for the cell population dynamics will be saved in the "in_silico_drs_summary" folder under the output directory.
+
+Furthermore, visualizing dose response for mutiple drugs, doses, and replicates in terms of GR-score, requires the calculation of GR score after the cell population dynamics have been computed. Further instructions have been provided in the following section. 
 
 ### Calculating GR Scores
 
@@ -255,7 +293,7 @@ To replace the SPARCED model in cell population simulations with another single 
 3. Save both python functions as modules with the same name as the functions under `LinResSims/bin/modules`.
 4. Write a json config file with key-specific values appropriate for the new model structure. Be sure to make "load_model" and "run_model" options consistent with the new module names. For more details on the stucture of the sim config, see `sim_configs/README.md`
 
-The Tyson 1991 cell cycle model has been presented as an example for this procedure. The "load_model" and "run_model" modules have been provided as `LinResSims/bin/modules/LoadTyson.py `and `LinResSims/bin/modules/RunTyson.py`. The sim_config json file corresponding to this workflow is` LinResSims/sim_config/default.json`
+The Tyson 1991 cell cycle model has been presented as an example for this procedure. The "load_model" and "run_model" modules have been provided as `LinResSims/bin/modules/LoadTyson.py `and `LinResSims/bin/modules/RunTyson.py`. The sim_config json file corresponding to this workflow is ` LinResSims/sim_config/default.json`
 
 ## Contributors Guide
 

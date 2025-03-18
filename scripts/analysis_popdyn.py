@@ -66,15 +66,18 @@ output_dir_main = os.path.join(wd,'output')
 
 exp_title = 'in_silico_drs'
 output_main = os.path.join(wd,'output',exp_title)
-# output_main = os.path.join("E:\\",exp_title)
 
-
-dir_doses_all = os.listdir(os.path.join(output_main,'drs_alpel','drs_alpel_rep1'))
+dir_doses_all = os.listdir(os.path.join(output_main,'drs_alpel_EC_rep1'))
 
 doses_all = [float(x.split('_')[-1]) for x in dir_doses_all]
 
 doses_all.sort()
 
+replicate_regex = r'^drs_alpel_EC_rep([1-9]|10)$'  # Ensures full match for rep[1-9]
+
+list_of_replicates = os.listdir(output_main)
+
+replicate_count = sum(1 for replicate in list_of_replicates if re.fullmatch(replicate_regex, replicate))
 
 #%%
 
@@ -83,8 +86,6 @@ doses_all.sort()
 from modules.drsPlotting import drs_dict
 
 
-#
-
 #%% dose response population dynamics
 
 
@@ -92,7 +93,8 @@ from modules.drsPlotting import drs_dict
 def drs_summarize(drug,dose_lvl,output_dir=output_main): # measures alive cell count from each simulation
     
     drs_dose = {}
-    for rep in range(10):
+    for rep in range(replicate_count):
+    
         print('now running...'+str(drug)+'...'+str(dose_lvl)+'...'+str(rep+1))
         drs_dict0 = drs_dict(output_dir,drug,rep+1,dose_lvl)
         pd,tp,td = drs_dict0.pop_dyn()
@@ -101,7 +103,7 @@ def drs_summarize(drug,dose_lvl,output_dir=output_main): # measures alive cell c
         drs_rep['tout'] = tp
         drs_rep['t_death'] = td
         drs_dose['r'+str(rep+1)] = drs_rep
-    return drs_dose
+        return drs_dose
 
 
 
@@ -120,6 +122,7 @@ drs_all = {}
 for dr_idx in range(len(drugs_exp)):
     
     drug = drugs_exp[dr_idx][:5].lower()
+    drug = drug + '_EC'
     
     
     drs_drug = {}
@@ -132,6 +135,9 @@ for dr_idx in range(len(drugs_exp)):
     drs_all[drug] = drs_drug
 
 #%
+
+if not os.path.exists(os.path.join(wd, 'output', 'in_silico_drs_summary')):
+    os.mkdir(os.path.join(wd, 'output', 'in_silico_drs_summary'))
 
 pickle.dump(drs_all, open(os.path.join(wd,'output','in_silico_drs_summary','drs_summary.pkl'),'wb'))
 
@@ -153,15 +159,15 @@ for dr in drugs:
         
         drs_median_dose = {}
         
-        tp_drs = [drs_all[dr]['d'+str(dl)]['r'+str(rep+1)]['tout'] for rep in range(10)]
-        popdyn_reps0 = [drs_all[dr]['d'+str(dl)]['r'+str(rep+1)]['cellpop'] for rep in range(10)]
+        tp_drs = [drs_all[dr]['d'+str(dl)]['r'+str(rep+1)]['tout'] for rep in range(replicate_count)]
+        popdyn_reps0 = [drs_all[dr]['d'+str(dl)]['r'+str(rep+1)]['cellpop'] for rep in range(replicate_count)]
         tp_all = np.array(list(itertools.chain(*tp_drs)))
         tp_all = np.unique(tp_all)
         tp_max = min([tp_drs[x][-1] for x in range(len(tp_drs))])
         tp_max_idx = np.where(tp_all == tp_max)[0][0]
         tp_all = tp_all[:tp_max_idx+1]
         popdyn_reps = []
-        for rep in range(10):
+        for rep in range(replicate_count):
             interpolator = interp1d(tp_drs[rep],popdyn_reps0[rep])
             y_new = interpolator(tp_all)
             popdyn_reps.append(y_new)
@@ -194,7 +200,7 @@ drugs_exp = ['Alpelisib','Neratinib','Trametinib','Palbociclib']
 
 drug_idx = 2
 
-drug = drugs_exp[drug_idx][:5].lower()
+drug = drugs_exp[drug_idx][:5].lower() + '_EC'
 
 for dl in range(10):
     
