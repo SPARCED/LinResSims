@@ -262,13 +262,15 @@ To replicate figures from the paper that use simulation outputs, dose response s
 * The script iterates over each drug and dose, updates the `LinResSims/sim_configs/drs_SPARCED.json`  configuration file at each iteration using the `LinResSims/scripts/update_json.py` script, and executes each simulation used to generate the published results.
 * To reduce computational overhead and simulation time, only one replicate is ran within this script. Expect this to take upwards of 1+ days to finish.
 
-#### Plotting Cell Population Dynamics
+#### Plotting Simulation Outputs
 
 To visualize simulation outputs for a given drug dose and replicate, we have provided a python class `drs_dict` defined within `bin/modules/drsPlotting.py`. Use case examples to generate a variety of plots have been provided as jupyter notebooks under the `LinResSims/jupyter_notebooks/` directory.
 
 * `figure_1c.ipynb`: cross generational protein level trajectories and single cell lineage tree
 * `figure_2abc.ipynb`: cell population dendrogram with control and dosage populations.
   * Requires **Prerequisite** section be complete prior.
+
+#### Plotting Cell Population Dynamics
 
 Some population level visualizations rely on cell population dynamics and require further analysis after simulation. For example, cell population dynamics require alive cell counts over time to have been completed.
 
