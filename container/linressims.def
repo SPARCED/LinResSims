@@ -3,7 +3,7 @@ From: ubuntu:22.04
 
 %files
     ### Change to user directory version of LinResSim
-    /path/to/LinResSim /LinResSim ### Change This Line
+    /path/to/LinResSims /LinResSims ### Change This Line
 
 %post
  
@@ -63,11 +63,11 @@ From: ubuntu:22.04
     export MANPATH=$OMPI_DIR/share/man:$MANPATH
 
     # Change permissions for /LinResSim
-    chmod -R 777 /LinResSim
-    chown -R root:root /LinResSim
+    chmod -R 777 /LinResSims
+    chown -R root:root /LinResSims
 
-    # Navigate to the LinResSim path
-    cd /LinResSim
+    # Navigate to the LinResSims path
+    cd /LinResSims
 
     # Ubuntu 22.04 doesn't symlink python to python3 by default:
     ln -s /usr/bin/python3 /usr/bin/python
@@ -90,11 +90,11 @@ From: ubuntu:22.04
     export SINGULAIRTYENV_APPEND_LD_LIBRARY_PATH=$OMPI_DIR/lib
 
     # Ensures the container is bound to the local instance of LinResSim for cross operation.
-    export SINGULARITY_BINDPATH="./LinResSim:/LinResSim:rw"
+    export SINGULARITY_BINDPATH="./LinResSims:/LinResSims:rw"
 
 %runscript
     # Default command for the container
-    exec LinResSim "$@"
+    exec LinResSims "$@"
 
 %startscript
     exec "$@"
