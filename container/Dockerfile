@@ -1,17 +1,17 @@
 # Must be built from the root directory of the repo
 # BUILD: docker buildx build -t birtwistlelab/linressim:latest -f container/Dockerfile .
-# TEST LOCAL (optional): docker run -p 8888:8888 --name test -it -v <path/to/LinResSim>:/LinResSim
+# TEST LOCAL (optional): docker run --rm -it -v <path/to/LinResSims>:/LinResSim birtwistlelab/linressim:latest
 # TAG: docker tag linressim birtwistlelab/linressim:latest
 # PUSH: docker push birtwistlelab/linressim:latest
 
 FROM ubuntu:22.04
 
 # Copy SPARCED files (ensure build context matches path)
-RUN mkdir -p /LinResSim
-COPY . /LinResSim/
+RUN mkdir -p /LinResSims
+COPY . /LinResSims/
 
 # Set working directory
-WORKDIR /LinResSim
+WORKDIR /LinResSims
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive \
