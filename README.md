@@ -156,7 +156,7 @@ Once inside the container, you'll see a prompt. By default the container launche
 
 ```bash
 $ pwd
-/LinResSims # Output
+/hostpath/to/LinResSims # Output
 ```
 
 **Exit the Container:**
@@ -196,7 +196,7 @@ To demonstrate running the singularity container on an HPC system with SLURM job
 
 ### Additional Simulation Flags
 
-To override the configuration file without writing over existing simulation settings, use the following (optional) command line arguments:
+To override the configuration file without writing over existing simulation settings, cellpop.py accepts the following (optional) command line arguments:
 
 * `--sim_name`: An arbitrary string defined by the user to create a directory under sparced/output where simulation outputs will be saved.
 * `--cellpop`: An integer specifying the number of starting cells for simulation
@@ -216,23 +216,43 @@ Workflow variables for cell population simulations are specified with the use of
 
 ## Reproducing Published Examples
 
-To simplify reproduction of our results,  bash scripts ()executable on a SLURM job scheduler) have been provided at `LinResSims/slurm_files`. Please execute these scripts in the following order:
+To simplify reproducing our results,  bash scripts (executable on a SLURM job scheduler) have been provided at `LinResSims/slurm_files`. Please execute these scripts in the following order:
 
 1. `LinResSims/slurm_files/new-container.sh # Builds the singularity container on the local system.`
-2. `LinResSims/slurm_files/compile-container.sh #builds an AMICI model for SPARCED simulation`
-3. `LinResSims/slurm_files/run-container.sh # Executes a single simulation of the SPARCED model based on the default_SPARCED.json settings`  OR
+2. `LinResSims/slurm_files/compile-container.sh # Compiles an AMICI model for SPARCED simulation`
+3. `LinResSims/slurm_files/run-container.sh # Executes a single simulation of the SPARCED model based on the default_SPARCED.json settings`  **OR**
    `LinResSims/slurm_files/figure_2defg.sh # Runs the simulations necessary to reproduce Figures 2D-F.`
 
-As a demonstration,   an example command to run the first replicate of cell population simulation with 0.003162 μM dose of trametinib for 72 hours, with 100 starting cells, using
-the name 'in_silico_drs' and 16 CPUs is provided below:
+**Example**: The below command demonstrates running a single cell population simulation within the singularity container for the following settings:
+
+| Simulation Name | Cell Population    | Simulation Time |
+| --------------- | ------------------ | --------------- |
+| 'in_silico_drs' | 100 starting cells | 72 hours        |
 
 ```
-mpirun -n 16 python cellpop.py --sim_name in_silico_drs --cellpop 100 --exp_time 72 --drug trame_EC --dose 0.003162 --rep rep1
+mpirun -n 16 singularity exec containerpython cellpop.py --sim_name in_silico_drs --cellpop 100 --exp_time 72
 ```
 
 Upon completion of simulations, the results are saved to disk in a folder structure corresponding to drug name, replicate identifier and drug dose respectively (e.g. `LinResSims/output/in_silico_drs/drs_trame/drs_trame_rep1/trame_EC_0.003162/` ). For a single simulation with a specific replicate of a drug dose, outputs (temporal species trajectories) from all cells in each generation are saved in a python pickle object (e.g. `LinResSims/output/in_silico_drs/drs_trame/drs_trame_rep1/trame_EC_0.003162/output_g1.pkl`).
 
 ### Visualization
+
+#### Prerequisites
+
+To replicate figures from the paper that use simulation outputs, dose response simulations for all 4 drugs, across 10 specified dose levels and 10 replicates must have been completed using a unique  simulation name, ( `--sim_name`, "in_silico_drs" by default) and placed at a convenient location (`LinResSims/output` by default). To simplify this on the user-end, a slurm batch script has been provided at `LinResSims/slurm_files/figure_2defg.sh`.
+
+* The script iterates over each drug and dose, updates the `LinResSims/sim_configs/drs_SPARCED.json`  configuration file at each iteration using the `LinResSims/scripts/update_json.py` script, and executes each simulation used to generate the published results.
+* To reduce computational overhead and simulation time, only one replicate is ran within this script. Expect this to take upwards of 1+ days to finish.
+
+#### Plotting Cell Population Dynamics
+
+To visualize simulation outputs for a given drug dose and replicate, we have provided a python class `drs_dict` defined within `bin/modules/drsPlotting.py`. Use case examples to generate a variety of plots have been provided as jupyter notebooks under the `LinResSims/jupyter_notebooks/` directory.
+
+* `figure_1c.ipynb`: cross generational protein level trajectories and single cell lineage tree
+* `figure_2abc.ipynb`: cell population dendrogram with control and dosage populations.
+  * Requires **Prerequisite** section be complete prior.
+
+Some population level visualizations rely on cell population dynamics and require further analysis after simulation. For example, cell population dynamics require alive cell counts over time to have been completed.
 
 To generate cell population dynamics (number of alive cells over time) from dose response simulation outputs, run  `LinResSims/scripts/analysis_popdyn.py`:
 
@@ -240,29 +260,34 @@ To generate cell population dynamics (number of alive cells over time) from dose
 python analysis_popdyn.py
 ```
 
-* Note,  `LinResSims/slurm_files/figure_2defg.sh` should be ran prior to `analysis_popdyn.py`
+Output results for the cell population dynamics will be saved at `LinResSims/output/in_silico_drs_summary`. Alternatively, outputs may be placed at a secondary locations and the path must be updated in line 68 of analysis_popdyn.py script.
 
-Outputs for the cell population dynamics will be saved in the "in_silico_drs_summary" folder under the output directory.
+#### Plotting GR Scores Per Dose
 
-### Calculating GR Scores
-
-To calculate GR score from the cell population dynamics, input files must be prepared for the gr-score calculation pipeline. The below steps describe calculating GR scores from results:
+Visualizing dose response for mutiple drugs, doses, and replicates in terms of GR-score, requires the calculation of GR score after the cell population dynamics have been computed. To calculate GR score from the cell population dynamics, input files must be prepared for the gr-score calculation pipeline. The below steps describe calculating GR scores from results:
 
 1. Complete the **Visualization** instructions provided in the previous section.
 2. Run `analysis_grscore.py` to generate the gr-score input file, which will be saved as `drs_grcalc3.tsv` in the `in_silico_drs_summary` folder.
 3. Take the input file generated at step 2 and run the gr-score calculation pipeline:
 
-   1. Clone the gr-score git repository:
-      * `git clone https://github.com/datarail/gr_metrics.git`
-   2. Install the anaconda environment provided in `LinResSims/setup/gr_metrics.yml`
-      * * `conda env create -f LinResSims/setup/gr_metrics.yml`
-   3. Change directories into the main gr_metrics python scripts folder:
-      * `cd gr_metrics/SRC/python/scripts`
-   4. Run `python add_gr_column.py [path/to/grs_grcalc3.tsv] > [path/to/LinResSims/jupyter_notebooks/]`
+   a. Clone the gr-score git repository:
+
+   * `git clone https://github.com/datarail/gr_metrics.git`
+
+   b. Install the anaconda environment provided in `LinResSims/setup/gr_metrics.yml`
+
+   * `conda env create -f LinResSims/setup/gr_metrics.yml`
+   * `conda activate gr_metrics`
+
+   c. Change directories into the main gr_metrics python scripts folder:
+
+   * `cd gr_metrics/SRC/python/scripts`
+
+   d. Run `python add_gr_column.py [path/to/grs_grcalc3.tsv] > [path/to/LinResSims/output/in_silico_drs_summary/drs_grcalc3_grc.tsv] `
 4. Create a [synapse account](https://accounts.synapse.org/?appId=synapse.org) and a personal authentication token following the instructions [here](https://help.synapse.org/docs/Managing-Your-Account.2055405596.html#ManagingYourAccount-PersonalAccessTokens:~:text=Account%20Settings%20page.-,Logging%20in,-Personal%20Access%20Tokens).
 
-   1. We highly suggest saving this somewhere because each synapse get request will require said auth token.
-5. Download all experimental dose response datasets (GR-scores) from [here](https://www.synapse.org/#!Synapse:syn18456348/) and place them in `in_silico_drs_summary/mcf10a_drs_exp`.
+   * We highly suggest saving this somewhere as each synapse get request will require it.
+5. Download all experimental dose response datasets (GR-scores) from [here](https://www.synapse.org/#!Synapse:syn18456348/) and place them in `in_silico_drs_summary/mcf10a_drs_exp`. This can either be done manually or using the bash commands provided below:
 
    ```
    # From the LinResSims project root directory:
@@ -276,16 +301,16 @@ To calculate GR score from the cell population dynamics, input files must be pre
    synapse config
 
    # Download each of the following, this will prompt for your synapse.org username and the authentication token.
-   synapse get syn18483759 
-   synapse get syn18483760 
-   synapse get syn18483761 
-   synapse get syn18483762 
-   synapse get syn18483763 
-   synapse get syn18483764 
-   synapse get syn18483765 
-   synapse get syn18483766
+   synapse get syn18456349
+   synapse get syn18456350 
+   synapse get syn18456351
+   synapse get syn18483752 
+   synapse get syn18483753 
+   synapse get syn18483754 
+   synapse get syn18483755 
+   synapse get syn18483756
    ```
-6. Plots from figures 1,2 can be generated with jupyter notebooks included in the `LinResSims/jupyter_notebooks` folder.
+6. The jupyter notebook `LinResSims/jupyter_notebooks/figure_2defg.ipynb` can now be used to visualize GR scores per drug dose.
 
 ## Running cell population simulations with a new single cell model:
 
