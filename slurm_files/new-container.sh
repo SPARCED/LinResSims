@@ -32,4 +32,4 @@
 #SBATCH --time 04:59:00               # Time
 
 cd /scratch/jrhuggi/LinResSims/
-singularity build --fakeroot container/linressims.sif container/linressim.def
+singularity build --fakeroot container/linressims.sif container/linressims.def
