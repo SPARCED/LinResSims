@@ -31,5 +31,5 @@
 #SBATCH --mem-per-cpu=20gb            # Memory alloted to each node
 #SBATCH --time 04:59:00               # Time
 
-cd /scratch/jrhuggi/LinResSims/
-singularity build --fakeroot container/linressims.sif container/linressims.def
+cd /scratch/jrhuggi/LinResSims/ ### Modify this line with local path
+singularity build --fakeroot container/linressims.sif container/linressim.def

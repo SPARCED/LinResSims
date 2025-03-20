@@ -11,8 +11,9 @@ parser.add_argument('-p', '--path', metavar='path', default='../sim_configs/drs_
                     help='Path to the JSON configuration file.')
 parser.add_argument('--drug', metavar='drug', required=True, help='Drug to perturb cell population with.')
 parser.add_argument('--dose', metavar='dose', required=True, help='Drug dose to be set.')
+parser.add_argument('--rep', metavar='rep', required=False, default='rep1', help='Replicate number')
 
-def change_drug_dose_settings(path, drug, dose):
+def change_drug_dose_settings(path, drug, dose, rep):
     """Modifies the JSON file at path to the user-provided drug and dose arguments."""
 
     # Ensure file exists
@@ -36,14 +37,15 @@ def change_drug_dose_settings(path, drug, dose):
     # Update values
     config["drs"]["drug"] = drug
     config["drs"]["dose_um"] = dose
+    config["drs"]["rep"] = rep
 
     # Save updated JSON
     with open(path, encoding='utf-8', mode='w') as file:
         json.dump(config, file, indent=2)
 
-    print(f"JSON file updated: Drug = {drug}, Dose = {dose}")
+    print(f"JSON file updated: Drug = {drug}, Dose = {dose}, Replicate = {rep}")
 
 
 if __name__ == '__main__':
     args = parser.parse_args()
-    change_drug_dose_settings(args.path, args.drug, args.dose)
+    change_drug_dose_settings(args.path, args.drug, args.dose, args.rep)
