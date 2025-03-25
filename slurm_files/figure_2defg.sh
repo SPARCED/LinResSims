@@ -48,7 +48,7 @@ do
     for conc in "${concentrations[@]}"; 
     do       
         # set the current drug and dose concentration.
-        python scripts/update_json.py -p sim_configs/drs_SPARCED.json --drug "$drug" --dose "$conc"
+        python3 scripts/update_json.py -p sim_configs/drs_SPARCED.json --drug "$drug" --dose "$conc"
 
         mpirun -n 100 singularity exec container/linressims.sif bash -c "
         cd scripts

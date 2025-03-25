@@ -67,15 +67,15 @@ output_dir_main = os.path.join(wd,'output')
 exp_title = 'in_silico_drs'
 output_main = os.path.join(wd,'output',exp_title)
 
-dir_doses_all = os.listdir(os.path.join(output_main,'drs_alpel_EC_rep1'))
+dir_doses_all = os.listdir(os.path.join(output_main, 'drs_alpel', 'drs_alpel_rep1'))
 
 doses_all = [float(x.split('_')[-1]) for x in dir_doses_all]
 
 doses_all.sort()
 
-replicate_regex = r'^drs_alpel_EC_rep([1-9]|10)$'  # Ensures full match for rep[1-9]
+replicate_regex = r'^drs_alpel_rep([1-9]|10)$'  # Ensures full match for rep[1-9]
 
-list_of_replicates = os.listdir(output_main)
+list_of_replicates = os.listdir(os.path.join(output_main, 'drs_alpel'))
 
 replicate_count = sum(1 for replicate in list_of_replicates if re.fullmatch(replicate_regex, replicate))
 
