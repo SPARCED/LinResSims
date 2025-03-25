@@ -25,7 +25,7 @@
 #SBATCH --error=sim_errors.txt  # Error file
 #SBATCH --nodes=2                     # Number of nodes
 #SBATCH --ntasks=40                    # Total number of MPI tasks (cores)
-#SBATCH --ntasks-per-node=1           # Number of MPI tasks per node, balancing load across nodes
+#SBATCH --ntasks-per-node=20           # Number of MPI tasks per node, balancing load across nodes
 #SBATCH --cpus-per-task=1             # Number of CPUs per task (usually 1 for MPI)
 #SBATCH --mem-per-cpu=20gb            # Memory alloted to each node
 #SBATCH --time 71:59:00               # Time
