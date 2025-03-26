@@ -320,10 +320,7 @@ Visualizing dose response for mutiple drugs, doses, and replicates in terms of G
    cd ../output/in_silico_drs_summary/mcf10a_drs_exp
 
    # this will prompt for your synapse.org username and the authentication token
-   synapse login -u <Synapse username> -p <API key>
-
-   # The following Will make sure you don't have to use the api-key for every download
-   synapse config
+   synapse login -u <Synapse username> -p <Synapse password>
 
    # Download each of the following, this will prompt for your synapse.org username and the authentication token.
    synapse get syn18456349
