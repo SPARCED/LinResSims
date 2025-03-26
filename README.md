@@ -297,10 +297,10 @@ Visualizing dose response for mutiple drugs, doses, and replicates in terms of G
    * `conda activate gr_metrics`
 
    c. Change directories into the main gr_metrics SRC directory and install the gr_metrics package via:
-
-   * `cd gr_metrics/SRC`
-   * `pip install SRC/python coverage python-coveralls doctest-ignore-unicode`
-
+  ```
+  cd gr_metrics
+  pip install SRC/python coverage python-coveralls doctest-ignore-unicode
+  ```
    d. Run the following:
 
    ```
