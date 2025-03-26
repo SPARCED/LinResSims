@@ -98,8 +98,13 @@ def gr_calc_row (drug,time_h,dl,rep,drs_summary_dict,cell_line='mcf10a_sim'):
     
     dose_dict = drs_summary_dict[str(drug)]['d'+str(dl)]['r'+str(rep+1)]
     cellpop = dose_dict['cellpop']
-    tout = dose_dict['tout']
- 
+    tout = dose_dict['tout'] 
+
+    tout_max_time = np.max(tout)
+
+    if (time_h*3600) > tout_max_time:
+        time_h = tout_max_time/3600
+
     interpolator = interp1d(tout,cellpop)
     cell_count = interpolator(time_h*3600)
     cell_count_time0 = dose_dict['cellpop'][0]
