@@ -314,9 +314,9 @@ Visualizing dose response for mutiple drugs, doses, and replicates in terms of G
 5. Download all experimental dose response datasets (GR-scores) from [here](https://www.synapse.org/#!Synapse:syn18456348/) and place them in `in_silico_drs_summary/mcf10a_drs_exp`. This can either be done manually or using the bash commands provided below:
 
    ```
-   # From the LinResSims project root directory:
-   mkdir output/in_silico_drs_summary/mcf10a_drs_exp
-   cd output/in_silico_drs_summary/mcf10a_drs_exp
+   # From the LinResSims/scripts project root directory:
+   mkdir ../output/in_silico_drs_summary/mcf10a_drs_exp
+   cd ../output/in_silico_drs_summary/mcf10a_drs_exp
 
    # this will prompt for your synapse.org username and the authentication token
    synapse login -u <Synapse username> -p <API key>
