@@ -283,9 +283,9 @@ Output results for the cell population dynamics will be saved at `LinResSims/out
 
 Visualizing dose response for mutiple drugs, doses, and replicates in terms of GR-score, requires the calculation of GR score after the cell population dynamics have been computed. To calculate GR score from the cell population dynamics, input files must be prepared for the gr-score calculation pipeline. The below steps describe calculating GR scores from results:
 
-1. Complete the Plotting **Cell Populatio****n Dynamics** instructions provided in the previous section.
+1. Complete the Plotting **Cell Population Dynamics** instructions provided in the previous section.
 2. Run `analysis_grscore.py` to generate the gr-score input file, which will be saved as `drs_grcalc3.tsv` in the `in_silico_drs_summary` folder.
-3. Take the input file generated at step 2 and run the gr-score calculation pipeline:
+3. Take the input file generated at step 2 and run the gr-score calculation pipeline in the `LinResSims/scripts` directory:
 
    a. Clone the gr-score git repository:
 
@@ -293,14 +293,20 @@ Visualizing dose response for mutiple drugs, doses, and replicates in terms of G
 
    b. Install the anaconda environment provided in `LinResSims/setup/gr_metrics.yml`
 
-   * `conda env create -f LinResSims/setup/gr_metrics.yml`
+   * `conda env create -f ../setup/gr_metrics.yml`
    * `conda activate gr_metrics`
 
-   c. Change directories into the main gr_metrics python scripts folder:
+   c. Change directories into the main gr_metrics SRC directory and install the gr_metrics package via:
 
-   * `cd gr_metrics/SRC/python/scripts`
+   * `cd gr_metrics/SRC`
+   * `pip install SRC/python coverage python-coveralls doctest-ignore-unicode`
 
-   d. Run `python add_gr_column.py [path/to/grs_grcalc3.tsv] > [path/to/LinResSims/output/in_silico_drs_summary/drs_grcalc3_grc.tsv] `
+   d. Run the following:
+
+   ```
+   cd python/scripts
+   python add_gr_column.py ../../../grs_grcalc3.tsv > ../../../../output/in_silico_drs_summary/drs_grcalc3_grc.tsv
+   ```
 4. Create a [synapse account](https://accounts.synapse.org/?appId=synapse.org) and a personal authentication token following the instructions [here](https://help.synapse.org/docs/Managing-Your-Account.2055405596.html#ManagingYourAccount-PersonalAccessTokens:~:text=Account%20Settings%20page.-,Logging%20in,-Personal%20Access%20Tokens).
 
    * We highly suggest saving this somewhere as each synapse get request will require it.
