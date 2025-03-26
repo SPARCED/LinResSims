@@ -122,8 +122,6 @@ drs_all = {}
 for dr_idx in range(len(drugs_exp)):
     
     drug = drugs_exp[dr_idx][:5].lower()
-    drug = drug + '_EC'
-    
     
     drs_drug = {}
     
@@ -201,7 +199,7 @@ drugs_exp = ['Alpelisib','Neratinib','Trametinib','Palbociclib']
 drug_idx = 2
 
 drug = drugs_exp[drug_idx][:5].lower() 
-drug = drug + '_EC'
+drug = drug # + '_EC' commented out EC due to lack of placement in directory selection
 
 for dl in range(10):
     

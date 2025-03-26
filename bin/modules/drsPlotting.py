@@ -35,8 +35,8 @@ class drs_dict():
 
         self.rep = rep
         self.dose_level = dose_level
-        # self.path_exp = os.path.join(main,'drs_'+drug)
-        self.path_exp = main
+        self.path_exp = os.path.join(main,'drs_'+drug)
+        # self.path_exp = main
         self.path_reps = os.listdir(self.path_exp)
         self.reps = [int(list(filter(str.isdigit, x.split('_')[-1]))[0]) for x in self.path_reps]
         self.path_rep = os.path.join(self.path_exp,'drs_'+str(drug)+'_rep'+str(rep))
@@ -44,7 +44,7 @@ class drs_dict():
         self.doses = [float(x.split('_')[-1]) for x in self.path_doses]
         self.doses.sort()
         
-        self.path_dose = os.path.join(self.path_rep,str(drug)+'_'+str(self.doses[dose_level]))
+        self.path_dose = os.path.join(self.path_rep,str(drug)+'_EC_'+str(self.doses[dose_level]))
         
         dose_files = os.listdir(self.path_dose)
         if 'output_preinc.pkl' in dose_files:
