@@ -306,7 +306,7 @@ Visualizing dose response for mutiple drugs, doses, and replicates in terms of G
 
   ```
   cd SRC/python/scripts
-  python add_gr_column.py ../../../grs_grcalc3.tsv > ../../../../output/in_silico_drs_summary/drs_grcalc3_grc.tsv
+  python add_gr_column.py ../../../../../output/in_silico_drs_summary/drs_grcalc3.tsv > ../../../../../output/in_silico_drs_summary/drs_grcalc3_grc.tsv
   ```
 4. Create a [synapse account](https://accounts.synapse.org/?appId=synapse.org) and a personal authentication token following the instructions [here](https://help.synapse.org/docs/Managing-Your-Account.2055405596.html#ManagingYourAccount-PersonalAccessTokens:~:text=Account%20Settings%20page.-,Logging%20in,-Personal%20Access%20Tokens).
 
