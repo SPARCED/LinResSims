@@ -39,7 +39,6 @@ dependencies:
       - chardet==4.0.0
       - coverage==5.5
       - doctest-ignore-unicode==0.1.2
-      - gr50==0.1
       - idna==2.10
       - python-coveralls==2.9.3
       - pyyaml==5.4.1
