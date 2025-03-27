@@ -102,8 +102,8 @@ def gr_calc_row (drug,time_h,dl,rep,drs_summary_dict,cell_line='mcf10a_sim'):
 
     tout_max_time = np.max(tout)
 
-    if (time_h*3600) > tout_max_time:
-        time_h = tout_max_time/3600
+    # if (time_h*3600) > tout_max_time:
+    #     time_h = tout_max_time/3600
 
     interpolator = interp1d(tout,cellpop)
     cell_count = interpolator(time_h*3600)
