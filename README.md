@@ -1,6 +1,6 @@
 # LinResSims User Guide
 
-_Written by Jonah R. Huggins, Arnab Mutsuddy, & Aurore Amrit_
+_Written by Jonah R. Huggins, Arnab Mutsuddy, Aurore Amrit, & Atalanta Harley-Gasaway_
 
 ## Overview
 
