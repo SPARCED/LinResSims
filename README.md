@@ -199,9 +199,6 @@ To demonstrate running the singularity container on an HPC system with SLURM job
 To override the configuration file without writing over existing simulation settings, cellpop.py accepts the following (optional) command line arguments:
 
 * `--sim_name`: An arbitrary string defined by the user to create a directory under sparced/output where simulation outputs will be saved.
-* `--cellpop`: An integer specifying the number of starting cells for simulation
-* `--exp_time`: Duration of experiment in hours
-* `--rep`: String identifier for the current replicate
 * `--egf`: Serum EGF concentration in nM
 * `--ins`: Serum INS concentration in nM
 * `--hgf`: Serum HGF concentration in nM
