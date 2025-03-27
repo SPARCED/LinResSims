@@ -288,40 +288,39 @@ Visualizing dose response for mutiple drugs, doses, and replicates in terms of G
 3. Take the input file generated at step 2 and run the gr-score calculation pipeline in the `LinResSims/scripts` directory:
 
    a. Clone the gr-score git repository:
-
-   * `git clone https://github.com/datarail/gr_metrics.git`
-
+  ```
+  git clone https://github.com/datarail/gr_metrics.git
+  ```
    b. Install the anaconda environment provided in `LinResSims/setup/gr_metrics.yml`
-
-   * `conda env create -f ../setup/gr_metrics.yml`
-   * `conda activate gr_metrics`
+  ```
+  conda env create -f ../setup/gr_metrics.yml
+  conda activate gr_metrics
+  ```
 
    c. Change directories into the main gr_metrics SRC directory and install the gr_metrics package via:
-
-   * `cd gr_metrics/SRC`
-   * `pip install SRC/python coverage python-coveralls doctest-ignore-unicode`
-
+  ```
+  cd gr_metrics
+  pip install SRC/python coverage python-coveralls doctest-ignore-unicode
+  ```
    d. Run the following:
 
-   ```
-   cd python/scripts
-   python add_gr_column.py ../../../grs_grcalc3.tsv > ../../../../output/in_silico_drs_summary/drs_grcalc3_grc.tsv
-   ```
+  ```
+  cd SRC/python/scripts
+  python add_gr_column.py ../../../../../output/in_silico_drs_summary/drs_grcalc3.tsv > ../../../../../output/in_silico_drs_summary/drs_grcalc3_grc.tsv
+  ```
 4. Create a [synapse account](https://accounts.synapse.org/?appId=synapse.org) and a personal authentication token following the instructions [here](https://help.synapse.org/docs/Managing-Your-Account.2055405596.html#ManagingYourAccount-PersonalAccessTokens:~:text=Account%20Settings%20page.-,Logging%20in,-Personal%20Access%20Tokens).
 
    * We highly suggest saving this somewhere as each synapse get request will require it.
 5. Download all experimental dose response datasets (GR-scores) from [here](https://www.synapse.org/#!Synapse:syn18456348/) and place them in `in_silico_drs_summary/mcf10a_drs_exp`. This can either be done manually or using the bash commands provided below:
 
    ```
-   # From the LinResSims project root directory:
-   mkdir output/in_silico_drs_summary/mcf10a_drs_exp
-   cd output/in_silico_drs_summary/mcf10a_drs_exp
+   # From the LinResSims/scripts/gr_metrics/SRC/python/scripts directory:
+   cd ../../../../; pwd 
+   mkdir ../output/in_silico_drs_summary/mcf10a_drs_exp
+   cd ../output/in_silico_drs_summary/mcf10a_drs_exp
 
    # this will prompt for your synapse.org username and the authentication token
-   synapse login -u <Synapse username> -p <API key>
-
-   # The following Will make sure you don't have to use the api-key for every download
-   synapse config
+   synapse login -u <Synapse username> -p <Synapse password>
 
    # Download each of the following, this will prompt for your synapse.org username and the authentication token.
    synapse get syn18456349
