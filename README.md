@@ -1,4 +1,4 @@
-# LinResSims User Guide
+# User Guide
 
 _Written by Jonah R. Huggins, Arnab Mutsuddy, Aurore Amrit, & Atalanta Harley-Gasaway_
 
@@ -6,7 +6,7 @@ _Written by Jonah R. Huggins, Arnab Mutsuddy, Aurore Amrit, & Atalanta Harley-Ga
 
 This is a pipeline to generate lineage resolved cell population simulations using the SPARCED single cell model.
 
-**LinRessims** runs seamlessly on **Ubuntu 22.04 LTS** , either as a virtual machine (i.e. **VirtualBox**), a container (**Singularity** or **Dockerfile**), or on **Native** **Linux.** This guide should work even if you are using another hypervisor than VirtualBox or that you are running Ubuntu directly on your computer. With a few arrangements, the described steps should also work for other versions of Ubuntu or any Debian-based Linux distribution.
+**LinResSims** runs seamlessly on **Ubuntu 22.04 LTS** , either as a virtual machine (i.e. **VirtualBox**), a container (**Singularity** or **Dockerfile**), or on **Native** **Linux.** This guide should work even if you are using another hypervisor than VirtualBox or that you are running Ubuntu directly on your computer. With a few arrangements, the described steps should also work for other versions of Ubuntu or any Debian-based Linux distribution.
 
 ## Installation Guide
 
