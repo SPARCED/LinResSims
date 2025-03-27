@@ -1,7 +1,7 @@
 {
   "sim_name": "in_silico_drs",
   "time_unit": "second",
-  "exp_time": 48,
+  "exp_time": 72,
   "preinc_time": 48,
   "gen0_time": 48,
   "cc_marker": "Mb",
