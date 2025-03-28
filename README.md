@@ -331,7 +331,7 @@ Visualizing dose response for mutiple drugs, doses, and replicates in terms of G
    ```
 6. The jupyter notebook `LinResSims/jupyter_notebooks/figure_2defg.ipynb` can now be used to visualize GR scores per drug dose.
 
-## Running cell population simulations with a new single cell model:
+## Running cell population simulations with a new single cell model
 
 By default, the cell population simulation workflow uses the SPARCED single cell model. It is capable of running simulations with a different single cell model given that the model has a compatible structure. A compatible model must satisfy the following requirements:
 
