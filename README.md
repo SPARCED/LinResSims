@@ -339,14 +339,14 @@ By default, the cell population simulation workflow uses the SPARCED single cell
 * The model must have a variable representing dynamic molecular signature of cell cycle markers, i.e., periodic activation and inactivation of cyclins.
 * The model must be executable within a python module.
 
+An example of this extensibiltity is provided in the `LinResSims/bin/modules/LoadTyson.py` and `LinResSims/bin/modules/RunTyson.py` scripts, detailing the 1991 Tyson Cell Division Cycle Model[1](https://www.pnas.org/doi/epdf/10.1073/pnas.88.16.7328). The configuration json file corresponding to this workflow is ` LinResSims/sim_config/default.json`. 
+
 To replace the SPARCED model in cell population simulations with another single cell model:
 
 1. Place all single cell simulation operations within a python function (see `LinResSims/bin/modules/RunTyson.py` for an example).
 2. Write another python function to generate an input dict for the single cell model function, mirroring the input/output structure of the LoadSPARCED function (see `LinResSims/bin/modules/LoadTyson.py` for an example).
 3. Save both python functions as modules with the same name as the functions under `LinResSims/bin/modules`.
 4. Write a json config file with key-specific values appropriate for the new model structure. Be sure to make "load_model" and "run_model" options consistent with the new module names. For more details on the stucture of the sim config, see `sim_configs/README.md`
-
-The Tyson 1991 cell cycle model has been presented as an example for this procedure. The "load_model" and "run_model" modules have been provided as `LinResSims/bin/modules/LoadTyson.py `and `LinResSims/bin/modules/RunTyson.py`. The sim_config json file corresponding to this workflow is ` LinResSims/sim_config/default.json`
 
 ## Contributors Guide
 
