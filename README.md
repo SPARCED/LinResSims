@@ -339,7 +339,7 @@ By default, the cell population simulation workflow uses the SPARCED single cell
 * The model must have a variable representing dynamic molecular signature of cell cycle markers, i.e., periodic activation and inactivation of cyclins.
 * The model must be executable within a python module.
 
-An example of this extensibiltity is provided in the `LinResSims/bin/modules/LoadTyson.py` and `LinResSims/bin/modules/RunTyson.py` scripts, detailing the 1991 Tyson Cell Division Cycle Model[1](https://www.pnas.org/doi/epdf/10.1073/pnas.88.16.7328). The configuration json file corresponding to this workflow is ` LinResSims/sim_config/default.json`. 
+An example of this extensibiltity is provided in the `LinResSims/bin/modules/LoadTyson.py` and `LinResSims/bin/modules/RunTyson.py` scripts, detailing the [Tyson Cell Division Cycle Model](https://www.pnas.org/doi/epdf/10.1073/pnas.88.16.7328) (1991). The configuration json file corresponding to this workflow is ` LinResSims/sim_config/default.json`. 
 
 To replace the SPARCED model in cell population simulations with another single cell model:
 
