@@ -596,7 +596,9 @@ for task in range(g1_cell_start, g1_cell_end):
                     RunModel_outputs_lite = {}
     
                     for output_idx,output_key in enumerate(model_outputs):
-                        RunModel_outputs_lite[output_key] = np.array(list(itertools.islice(RunModel_outputs[output_key],0,(len(RunModel_outputs[output_key])-1),downsample_rate)))
+                        RunModel_outputs_lite[output_key] = np.array(list(itertools.islice(RunModel_outputs[output_key],0,(dp1+1),downsample_rate)))
+                        
+                        
                     
                     
 
@@ -622,7 +624,7 @@ for task in range(g1_cell_start, g1_cell_end):
                 RunModel_outputs_lite = {}
         
                 for output_idx,output_key in enumerate(model_outputs):
-                    RunModel_outputs_lite[output_key] = np.array(list(itertools.islice(RunModel_outputs[output_key],0,(len(RunModel_outputs[output_key])-1),downsample_rate)))
+                    RunModel_outputs_lite[output_key] = np.array(list(itertools.islice(RunModel_outputs[output_key],0,(dp1+1),downsample_rate)))
                 
 
 
