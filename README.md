@@ -4,7 +4,7 @@ _Written by Jonah R. Huggins, Arnab Mutsuddy, Aurore Amrit, & Atalanta Harley-Ga
 
 ## Overview
 
-This is a pipeline to generate lineage resolved cell population simulations using the SPARCED single cell model.
+This is a pipeline to generate lineage resolved cell population simulations using the SPARCED single cell model. Instructions for applying the framework to another model are provided below.
 
 **LinResSims** runs seamlessly on **Ubuntu 22.04 LTS** , either as a virtual machine (i.e. **VirtualBox**), a container (**Singularity** or **Dockerfile**), or on **Native** **Linux.** This guide should work even if you are using another hypervisor than VirtualBox or that you are running Ubuntu directly on your computer. With a few arrangements, the described steps should also work for other versions of Ubuntu or any Debian-based Linux distribution.
 
