@@ -2,8 +2,9 @@ Bootstrap: docker
 From: ubuntu:22.04
 
 %files
-    ### Change to user directory version of LinResSim
+    ### Modify line 6, columns 9:14 to local LinResSims directory
     /path/to/LinResSims /LinResSims ### Change This Line
+    #^^^^^^^^changeme -->#^^^^^^^^Don't Delete Me :'(
 
 %post
  
