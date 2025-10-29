@@ -227,7 +227,7 @@ To simplify reproducing our results,  bash scripts (executable on a SLURM job sc
 | 'in_silico_drs' | 100 starting cells | 72 hours        |
 
 ```
-mpirun -n 16 singularity exec containerpython cellpop.py --sim_name in_silico_drs --cellpop 100 --exp_time 72
+mpirun -n 16 singularity exec path/to/container.sif python cellpop.py --sim_name in_silico_drs --cellpop 100 --exp_time 72
 ```
 
 Upon completion of simulations, the results are saved to disk in a folder structure corresponding to drug name, replicate identifier and drug dose respectively (e.g. `LinResSims/output/in_silico_drs/drs_trame/drs_trame_rep1/trame_EC_0.003162/` ). For a single simulation with a specific replicate of a drug dose, outputs (temporal species trajectories) from all cells in each generation are saved in a python pickle object (e.g. `LinResSims/output/in_silico_drs/drs_trame/drs_trame_rep1/trame_EC_0.003162/output_g1.pkl`). The number of these pickle files within a folder corresponds to the number of generations of cells that were dynamically created within that specific dose/replicate simulation. Each pickle file contains a generation specific python dictionary, of which the outermost layer contains a dictionary representing one cell in that generation, which is accessed by using an integer index of the cell as key ('1', '2', '3', .... 'n'). Each cell specific dictionary has the following structure of keys, values and elements:
