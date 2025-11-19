@@ -60,6 +60,12 @@ singularity inspect container/linressims.sif
 
 Congratulations! You now have a full setup of LinResSims! 🦠
 
+Additionally, the pre-built Singularity container is available:
+
+'''bash
+wget https://github.com/SPARCED/LinResSims/releases/download/v1.1/linressims.sif
+'''
+
 ### Ubuntu 22.04 (local) Installation
 
 For users with administrator (root) access who want to install project dependencies locally outside of a container, an installation script has been provided (`LinResSims/install.sh`) to simplify the dependency installations. To run, execute the following commands:
