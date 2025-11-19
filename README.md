@@ -62,9 +62,9 @@ Congratulations! You now have a full setup of LinResSims! 🦠
 
 Additionally, the pre-built Singularity container is available:
 
-'''bash
+```bash
 wget https://github.com/SPARCED/LinResSims/releases/download/v1.1/linressims.sif
-'''
+```
 
 ### Ubuntu 22.04 (local) Installation
 
